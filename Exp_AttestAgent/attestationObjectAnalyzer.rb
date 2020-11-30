@@ -14,7 +14,6 @@ require 'net/http'
 class AttestationObjectAnalyzer
     APPLE_OID = '1.2.840.113635.100.8.2'
     SUBJECT_KEYID_OID = 'subjectKeyIdentifier'
-    # APPID = '26NXE47HN2.io.github.kwrsin.Exp-Artest'
 
 
     def initialize(keyId, attestationObject, challenge, appId)
@@ -173,20 +172,18 @@ PEM
 
     def isValidKeyId?
         # REF: http://oid-info.com/get/2.5.29.14
-        # TODO: not supported
+        # REF: https://github.com/ruby/openssl/issues/163#issuecomment-339108949
         return false if @keyId.to_s.empty?
         
-        # extension = @leaf_cartification
-        #     .extensions.detect { |ext|
-        #         ext.oid == SUBJECT_KEYID_OID }
-        
-        # ext_asn1 = OpenSSL::ASN1.decode(extension.to_der)
-        # ext_value = ext_asn1.value.last.value
-        # pub_key = ext_value
-        pub_key = toDigest @intermidiate_cartification.public_key.to_pem
-        # pub_key = OpenSSL::Digest::SHA256.hexdigest(@intermidiate_cartification.public_key.to_der)
-        # pub_key = Base64.urlsafe_encode64(pub_key, padding: false)
-        puts "#{pub_key} ==> #{@keyId}"
+        public_key = @intermidiate_cartification.public_key.to_der
+        asn1 = OpenSSL::ASN1.decode(public_key) 
+        pub_key = nil 
+        asn1.value.each {|v|
+            if v.tag == 3 
+                pub_key = v.value
+            end
+        }
+        pub_key = toDigest pub_key
         return pub_key == @keyId
     end
 
