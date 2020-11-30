@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:">
+      location = "self:/Users/kwrsin/Documents/iOS_dev/Attest/Exp_Artest/Exp_Attest.xcodeproj">
    </FileRef>
 </Workspace>

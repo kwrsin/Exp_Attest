@@ -1,6 +1,6 @@
 //
-//  Exp_ArtestTests.swift
-//  Exp_ArtestTests
+//  Exp_AttestTests.swift
+//  Exp_AttestTests
 //
 //  Created by kwrsin on 2020/11/23.
 //
@@ -8,7 +8,7 @@
 import XCTest
 @testable import Exp_Artest
 
-class Exp_ArtestTests: XCTestCase {
+class Exp_AttestTests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

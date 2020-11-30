@@ -1,13 +1,13 @@
 //
-//  Exp_ArtestUITests.swift
-//  Exp_ArtestUITests
+//  Exp_AttestUITests.swift
+//  Exp_AttestUITests
 //
 //  Created by kwrsin on 2020/11/23.
 //
 
 import XCTest
 
-class Exp_ArtestUITests: XCTestCase {
+class Exp_AttestUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
