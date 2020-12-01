@@ -26,39 +26,57 @@ module StrageManager
                     if options[:records]
                         @records = options[:records]
                     else
-                        load
+                        load!
                     end
                 else
-                    raise "options Must"
+                    raise "Must options"
                 end
             end
 
             protected
-            def load
-                raise "Not Implemented!!"
+            def load!
+                raise "load! is Not Implemented!!"
             end
 
             public
-            def save
-                raise "Not Implemented!!"
+            def save!(diff)
+                raise "save! is Not Implemented!!"
+            end
+            
+            def remove!
+                raise "remove! is Not Implemented!!"
             end
 
-            def output
-                p @records
+            def merge(diff)
+                @records.merge(diff) if diff
+            end
+
+            def prop(key)
+                @records[key]
             end
         end
 
         class FileStrage < BaseStrage
             @strageName = :File
 
-            def load
+            def load!
                 @records = Marshal.load(File.read(@path)) if FileTest.exists? @path
                 @records ||= {}
             end
 
-            def save
+            def save!(diff = nil)
+                @records = merge(diff)
                 records = Marshal.dump(@records)
-                File.write(@path, records)        
+                File.write(@path, records)
+                return @records       
+            end
+
+            def remove!
+                begin
+                    File.delete(@path)
+                rescue
+                    raise $!
+                end
             end
         end
 
