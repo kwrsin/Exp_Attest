@@ -16,12 +16,14 @@ configure do
 end
 
 configure :development do
-    set :logger, Logger.new(STDOUT)    
+    logger = Logger.new(STDOUT)  
+    logger.level = Logger::DEBUG
+    set :logger, logger
 end
 
 configure :production do
-    logger = Logger.new(File.open("#{settings.root}/log/#{settings.environment}.log", 'a'))
-    logger.level = Logger::DEBUG if development?
+    logger = Logger.new(
+        File.open("#{settings.root}/log/#{settings.environment}.log", 'a'))
     set :logger, logger    
 end
 
@@ -54,7 +56,7 @@ post '/attestation/:uuid' do
     begin
         mode = analyzer.verify!
     rescue => error
-        logger.info error.message
+        logger.error error.message
     end
 
     json :req => 'ok'
