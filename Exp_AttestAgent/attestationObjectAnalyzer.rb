@@ -8,13 +8,11 @@ require 'cbor'
 # require 'libcbor/all'
 
 require 'openssl'
-require 'net/http'
+# require 'net/http'
 
 # REF: https://developer.apple.com/documentation/devicecheck/validating_apps_that_connect_to_your_server
 class AttestationObjectAnalyzer
     APPLE_OID = '1.2.840.113635.100.8.2'
-    SUBJECT_KEYID_OID = 'subjectKeyIdentifier'
-
 
     def initialize(keyId, attestationObject, challenge, appId)
         @keyId = Base64.decode64(keyId)

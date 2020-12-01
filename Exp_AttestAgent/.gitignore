@@ -1,5 +1,6 @@
 .bundle/
 vendor/
+store/
 
 dump*
 output

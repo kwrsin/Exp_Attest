@@ -3,12 +3,16 @@ require 'singleton'
 require './tools'
 
 class ChallengeFactory
-    @@path = './dump'
+    @@path = '../store/dump'
     include Singleton
 
     def initialize
         @challenges = {}
         load
+    end
+
+    def self.setDumpPath(path)
+        @@path = path
     end
 
     def challenge(key)

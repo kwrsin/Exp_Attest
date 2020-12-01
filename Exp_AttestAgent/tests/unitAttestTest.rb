@@ -9,15 +9,16 @@ $ bundle exec ruby tests/unitAttestTest.rb
 
 class TC_Attest < Test::Unit::TestCase
     def setup
+        ChallengeFactory.setDumpPath './store/dump'
         @cf = ChallengeFactory.instance
-        ENV['ATTEST_APPID'] = 'XXXXXXXXXX.io.github.kwrsin.Exp-Artest'
+        ENV['ATTEST_APPID'] = 'XXXXXXXXXX.io.github.kwrsin.Exp-Attest'
     end
 
     def teardown
     end
 
     def test_analyzer
-        uuid = "91ce268c4eac4444a8625b2c24f5626f"
+        uuid = "03b0549efe2941cfa10577561ffebc13"
         c = @cf.challenge(uuid)
         attestationObject = c[:attestation]
         keyId = c[:keyId]
