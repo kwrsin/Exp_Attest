@@ -4,6 +4,8 @@ require 'bundler/setup'
 require 'sinatra'
 require 'sinatra/reloader'
 require 'sinatra/json'
+require 'sinatra/custom_logger'
+require 'logger'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
 
@@ -11,10 +13,15 @@ set :bind, '0.0.0.0'
 
 configure do
     set :cf, ChallengeFactory.instance
+    logger = Logger.new(File.open("#{settings.root}/log/#{settings.environment}.log", 'a'))
+    logger.level = Logger::DEBUG if development?
+    set :logger, logger    
 end
 
+
 get '/' do
-    "let\'s attest. #{ENV['ATTEST_APPID']}"
+    logger.debug "ENV=#{ENV['ATTEST_APPID']}"
+    "let\'s attest."
 end
 
 get '/challenge/:uuid' do
