@@ -35,7 +35,13 @@ post '/attestation/:uuid' do
     uuid = params[:uuid]
     settings.cf.set(uuid, params)
     appId = ENV['ATTEST_APPID'] || ''
-    AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
+    
+    analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
+    begin
+        mode = analyzer.verify!
+    rescue => error
+        puts error.message
+    end
 
     json :req => 'ok'
 end
