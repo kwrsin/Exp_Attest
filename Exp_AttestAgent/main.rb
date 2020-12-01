@@ -13,6 +13,13 @@ set :bind, '0.0.0.0'
 
 configure do
     set :cf, ChallengeFactory.instance
+end
+
+configure :development do
+    set :logger, Logger.new(STDOUT)    
+end
+
+configure :production do
     logger = Logger.new(File.open("#{settings.root}/log/#{settings.environment}.log", 'a'))
     logger.level = Logger::DEBUG if development?
     set :logger, logger    
@@ -47,7 +54,7 @@ post '/attestation/:uuid' do
     begin
         mode = analyzer.verify!
     rescue => error
-        puts error.message
+        logger.info error.message
     end
 
     json :req => 'ok'
