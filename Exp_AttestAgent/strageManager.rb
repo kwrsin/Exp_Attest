@@ -43,6 +43,10 @@ module StrageManager
                 raise "save! is Not Implemented!!"
             end
             
+            def update!
+                raise "update! is Not Implemented!!"
+            end
+            
             def remove!
                 raise "remove! is Not Implemented!!"
             end
@@ -65,7 +69,12 @@ module StrageManager
             end
 
             def save!(diff = nil)
+                railse "could not save @path." if FileTest.exists? @path
                 @records = merge(diff) if diff
+                update!     
+            end
+
+            def update!
                 records = Marshal.dump(@records)
                 File.write(@path, records)
                 @records       

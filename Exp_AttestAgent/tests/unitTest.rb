@@ -22,16 +22,14 @@ class TC_CF < Test::Unit::TestCase
     def test_new_challenge
         c = @cf.challenge(nil)
         assert_not_nil(c)
-        puts @cf.getChallenges
+        puts @cf.getChallenge
     end
 
     def test_same_challenge_not_appended
         c = @cf.challenge(nil)
-        len_c = @cf.getChallenges.length
 
         uid = c['uuid']
         d = @cf.challenge(uid)
-        len_d = @cf.getChallenges.length
         assert_equal(len_c, len_d)
     end
 end

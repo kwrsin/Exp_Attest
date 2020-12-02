@@ -23,7 +23,7 @@ configure :development do
     set :logger, logger
 end
 
-configure :production do
+configure :development, :production do
     logger = Logger.new(
         File.open("#{settings.root}/log/#{settings.environment}.log", 'a'))
     set :logger, logger    
@@ -58,7 +58,7 @@ post '/attestation/:uuid' do
     begin
         records = analyzer.toAttestedObject!
         strage = StrageManager::Strage.instance().getStrage(:file, {
-            challenge: uuid,
+            challenge: "#{uuid}_Attested",
             path: settings.store_path,
             records: records
         }).save!

@@ -109,6 +109,7 @@ PEM
             receipt: @cb['attStmt']['receipt'],
             counter: 0,
             mode: mode,
+            challenge_create_at: @cb['create_at'],
         }
         raise 'verifying fault!!'
     end
