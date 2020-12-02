@@ -6,6 +6,7 @@ require 'sinatra/reloader'
 require 'sinatra/json'
 require 'sinatra/custom_logger'
 require 'logger'
+require './constants'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
 require './strageManager'
@@ -13,8 +14,8 @@ require './strageManager'
 set :bind, '0.0.0.0'
 
 configure do
-    set :cf, (ChallengeFactory.instance().setting do |me| me.path '../store' end)
-    set :store_path, '../store'
+    set :cf, (ChallengeFactory.instance().setting do |me| me.path Constants::STORE_PATH end)
+    set :store_path, Constants::STORE_PATH
 end
 
 configure :development do
@@ -50,22 +51,24 @@ get '/challenge' do
 end
 
 post '/attestation/:uuid' do
-    uuid = params[:uuid]
-    settings.cf.set(uuid, params)
-    appId = ENV['ATTEST_APPID'] || ''
-    
-    analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
+    result = Constants::RESPONSE_FAULT 
     begin
+        uuid = params[:uuid]
+        settings.cf.set(uuid, params)
+        appId = ENV['ATTEST_APPID'] || ''
+        
+        analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
         records = analyzer.toAttestedObject!
         strage = StrageManager::Strage.instance().getStrage(:file, {
             challenge: "#{uuid}_Attested",
             path: settings.store_path,
             records: records
         }).save!
+        result = Constants::RESPONSE_SUCCESS
     rescue => error
         logger.error error.message
     end
 
-    json :req => 'ok'
+    json :result => result
 end
 
