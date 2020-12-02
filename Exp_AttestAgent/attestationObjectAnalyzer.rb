@@ -99,6 +99,20 @@ PEM
         return mode
     end
 
+    def toAttestedObject!
+        mode = verify!
+        return {
+            challenge: @challenge,
+            keyId: @keyId,
+            intermidiate_cartification: @cb['attStmt']['x5c'][0],
+            leaf_cartification: @cb['attStmt']['x5c'][1],
+            receipt: @cb['attStmt']['receipt'],
+            counter: 0,
+            mode: mode,
+        }
+        raise 'verifying fault!!'
+    end
+
     private
 
     def isValidChains?

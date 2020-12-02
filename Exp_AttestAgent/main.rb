@@ -8,11 +8,13 @@ require 'sinatra/custom_logger'
 require 'logger'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
+require './strageManager'
 
 set :bind, '0.0.0.0'
 
 configure do
-    set :cf, ChallengeFactory.instance
+    set :cf, (ChallengeFactory.instance().setting do |me| me.path '../store' end)
+    set :store_path, '../store'
 end
 
 configure :development do
@@ -54,7 +56,12 @@ post '/attestation/:uuid' do
     
     analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
     begin
-        mode = analyzer.verify!
+        records = analyzer.toAttestedObject!
+        strage = StrageManager::Strage.instance().getStrage(:file, {
+            challenge: uuid,
+            path: settings.store_path,
+            records: records
+        }).save!
     rescue => error
         logger.error error.message
     end

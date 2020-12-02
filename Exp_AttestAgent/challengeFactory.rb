@@ -6,9 +6,20 @@ class ChallengeFactory
     @@path = '../store/dump'
     include Singleton
 
-    def initialize
+    def initialize()
         @challenges = {}
         load
+    end
+
+    def setting(setter = nil)
+        setter(self) if setter
+        self
+    end
+
+    def path(dumpPath = nil)
+        if dumpPath
+            ChallengeFactory.setDumpPath File.join(dumpPath, :dump)
+        end
     end
 
     def self.setDumpPath(path)

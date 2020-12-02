@@ -65,10 +65,10 @@ module StrageManager
             end
 
             def save!(diff = nil)
-                @records = merge(diff)
+                @records = merge(diff) if diff
                 records = Marshal.dump(@records)
                 File.write(@path, records)
-                return @records       
+                @records       
             end
 
             def remove!
