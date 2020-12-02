@@ -89,6 +89,9 @@ struct ContentView: View {
                                     }
                                     let httpres = res as! HTTPURLResponse
                                     print(httpres.statusCode)
+                                    //                    DispatchQueue.main.async {
+                                    //                        challenge = sha256.description
+                                    //                    }
                                 }.resume()
 
                             }
@@ -96,9 +99,6 @@ struct ContentView: View {
                         
                     }
 
-//                    DispatchQueue.main.async {
-//                        challenge = sha256.description
-//                    }
                     
                 }.resume()
             }

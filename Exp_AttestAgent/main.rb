@@ -30,7 +30,6 @@ configure :development, :production do
     set :logger, logger    
 end
 
-
 get '/' do
     logger.debug "ENV=#{ENV['ATTEST_APPID']}"
     "let\'s attest."
