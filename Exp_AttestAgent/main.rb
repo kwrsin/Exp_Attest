@@ -83,8 +83,8 @@ end
 delete '/checked/:uuid' do
     result = Constants::RESPONSE_FAULT
     begin
-        path = File.join(Constants::STORE_PATH, "#{params[:uuid]}*")
-        FileUtils.rm(Dir.glob(path))
+        analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], appId)
+        deleteAttestedFiles(params[:uuid]) if analyzer.verify! > 0
 
         result = Constants::RESPONSE_SUCCESS
     rescue => error
