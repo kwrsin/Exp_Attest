@@ -6,6 +6,7 @@ require 'sinatra/reloader'
 require 'sinatra/json'
 require 'sinatra/custom_logger'
 require 'logger'
+require 'fileutils'
 require './constants'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
@@ -69,7 +70,7 @@ post '/assertion' do
     result = Constants::RESPONSE_FAULT
     begin
         appId = ENV['ATTEST_APPID'] || ''
-        
+
         analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], appId)
         result = Constants::RESPONSE_SUCCESS if analyzer.updateCounter!
     rescue => error
@@ -77,4 +78,18 @@ post '/assertion' do
     end
 
     json :result => "HELLOWORLD => #{result}"
+end
+
+delete '/checked/:uuid' do
+    result = Constants::RESPONSE_FAULT
+    begin
+        path = File.join(Constants::STORE_PATH, "#{params[:uuid]}*")
+        FileUtils.rm(Dir.glob(path))
+
+        result = Constants::RESPONSE_SUCCESS
+    rescue => error
+        logger.error error.message
+    end
+
+    json :result => "#{result}"
 end
