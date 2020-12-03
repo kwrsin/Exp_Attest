@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'bundler/setup'
 
+require './constants'
+require './strageManager'
 require 'base64'
 require 'cbor'
 require 'openssl'
@@ -95,9 +97,9 @@ PEM
         return mode
     end
 
-    def toAttestedObject!
+    def saveAttestedObject!
         mode = verify!
-        return {
+        records =  {
             challenge: @challenge,
             keyId: @keyId,
             intermidiate_cartification: @cb['attStmt']['x5c'][0],
@@ -107,7 +109,13 @@ PEM
             mode: mode,
             challenge_create_at: @cb['create_at'],
         }
-        raise 'verifying fault!!'
+        result = StrageManager::Strage.instance().getStrage(:file, {
+            challenge: "#{@challenge}_Attested",
+            path: Constants::STORE_PATH,
+            records: records
+        }).save!
+        return true if result
+        raise 'persistent fault!!'
     end
 
     private

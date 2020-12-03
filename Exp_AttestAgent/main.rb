@@ -10,7 +10,6 @@ require './constants'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
 require './assertionObjectAnalyzer'
-require './strageManager'
 
 set :bind, '0.0.0.0'
 
@@ -58,12 +57,7 @@ post '/attestation/:uuid' do
         appId = ENV['ATTEST_APPID'] || ''
         
         analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
-        records = analyzer.toAttestedObject!
-        strage = StrageManager::Strage.instance().getStrage(:file, {
-            challenge: "#{uuid}_Attested",
-            path: settings.store_path,
-            records: records
-        }).save!
+        analyzer.saveAttestedObject!
         result = Constants::RESPONSE_SUCCESS
     rescue => error
         logger.error error.message
@@ -78,7 +72,7 @@ post '/assertion' do
     begin
         appId = ENV['ATTEST_APPID'] || ''
         analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], appId)
-        result = Constants::RESPONSE_SUCCESS if analyzer.verify! > 0
+        result = Constants::RESPONSE_SUCCESS if analyzer.updateCounter!
     rescue => error
         logger.error error.message
     end

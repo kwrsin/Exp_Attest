@@ -58,14 +58,6 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         # STEP5
         raise 'challenge is invalid!!' if !validChallenge?
         
-        @records[:counter] = counter
-        StrageManager::Strage.instance().getStrage(:file, {
-            challenge: @filename,
-            path: Constants::STORE_PATH,
-        }).update!({
-            counter: counter,
-        })
-
         return counter
     end
 
@@ -86,5 +78,20 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
 
     def validChallenge?
         @parsedClientData["challenge"] == @records[:challenge]
+    end
+
+    def updateCounter!
+        counter = verify!
+        if counter > 0
+            @records[:counter] = counter
+            StrageManager::Strage.instance().getStrage(:file, {
+                challenge: @filename,
+                path: Constants::STORE_PATH,
+            }).update!({
+                counter: counter,
+            })
+            return true
+        end
+        raise 'updating fault!!'
     end
 end
