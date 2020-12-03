@@ -1,28 +1,22 @@
-
 require 'rubygems'
 require 'bundler/setup'
 
+require './constants'
+require './strageManager'
 require 'base64'
-
 require 'cbor'
-# require 'libcbor/all'
-
 require 'openssl'
-require 'net/http'
+# require 'net/http'
 
 # REF: https://developer.apple.com/documentation/devicecheck/validating_apps_that_connect_to_your_server
 class AttestationObjectAnalyzer
     APPLE_OID = '1.2.840.113635.100.8.2'
-    SUBJECT_KEYID_OID = 'subjectKeyIdentifier'
-
 
     def initialize(keyId, attestationObject, challenge, appId)
         @keyId = Base64.decode64(keyId)
         @attestationObject = Base64.decode64(attestationObject)
-        # @attestationObject = attestationObject
-        # File.write("./aobj", attestationObject)
-        # puts @keyId
         @appId = appId
+        @challenge = challenge
         @cb = CBOR.decode(@attestationObject)
         # ca_pem = Net::HTTP.get(URI('https://www.apple.com/certificateauthority/Apple_App_Attestation_Root_CA.pem'))
         ca_pem = <<~PEM
@@ -68,62 +62,60 @@ PEM
         )            
         @credential_id = auth_data.byteslice(55...(55 + length))
 
+    end
+
+    public
+    def verify!
         # STEP1
-        if isValidChains?
-            puts 'chains are valid.'
-        else
-            puts 'chains are invalid!!'
-        end
+        raise 'chains are invalid!!' if !isValidChains?
         
         # STEP2
-        h = appendChallengeHash(@cb['authData'], challenge)
+        h = appendHash(@cb['authData'], @challenge)
 
         # STEP3
         nonce = getNonceFromAuthData(h)
 
         # STEP4
-        if isSameNonce? nonce
-            puts 'nonce is same.'
-        else
-            puts 'nonce is NOT same!!'
-        end
+        raise 'nonce is NOT same!!' if !isSameNonce?(nonce)
 
         # STEP5
-        if isValidKeyId?
-            puts 'key is valid.'
-        else
-            puts 'key is invalid!!'
-        end
+        raise 'key is invalid!!' if !isValidKeyId?
 
         # STEP6
-        if isValidRrId?
-            puts 'RrId is valid.'
-        else
-            puts 'RrId is invalid!!'
-        end
+        raise 'RrId is invalid!!' if !isValidRrId?
 
         # STEP7
-        if isValidCounter?
-            puts 'Counter is zero.'
-        else
-            puts 'Counter is not zero!!'
-        end
+        raise 'Counter is not zero!!' if !isZeroCounter?
 
         # STEP8
-        if isDevelopping?
-            puts 'It\'s Delelopment mode. (Aaguid)'
-        else
-            puts 'It\'s Production mode. (AaguId)'
-        end
+        mode = :production
+        mode = :development if isDevelopping?
 
         # STEP9
-        if isValidCredentialId?
-            puts 'CredentialId is valid.'
-        else
-            puts 'CredentialId is invalid!!'
-        end
+        raise 'CredentialId is invalid!!' if !isValidCredentialId?
 
-        
+        return mode
+    end
+
+    def saveAttestedObject!
+        mode = verify!
+        records =  {
+            challenge: @challenge,
+            keyId: @keyId,
+            intermidiate_cartification: @cb['attStmt']['x5c'][0],
+            leaf_cartification: @cb['attStmt']['x5c'][1],
+            receipt: @cb['attStmt']['receipt'],
+            counter: 0,
+            mode: mode,
+            challenge_create_at: @cb['create_at'],
+        }
+        result = StrageManager::Strage.instance().getStrage(:file, {
+            challenge: "#{@challenge}_Attested",
+            path: Constants::STORE_PATH,
+            records: records
+        }).save!
+        return true if result
+        raise 'persistent fault!!'
     end
 
     private
@@ -147,14 +139,14 @@ PEM
         OpenSSL::Digest::SHA256.new(value).digest
     end
 
-    def appendChallengeHash(authData, challenge)
-        digest = toDigest challenge
+    def appendHash(authData, obj)
+        digest = toDigest obj
         authData << digest
         authData
     end
 
-    def getNonceFromAuthData(authDataWithChallenge)
-        digest = toDigest authDataWithChallenge
+    def getNonceFromAuthData(authDataWithObj)
+        digest = toDigest authDataWithObj
         digest
     end
 
@@ -193,9 +185,13 @@ PEM
         return hashedAppId == hashedRpId
     end
 
-    def isValidCounter?
+    def getCounter
         counter = @counter.unpack('N1').first
-        return counter === 0
+        counter
+    end
+
+    def isZeroCounter?
+        return getCounter === 0
     end
 
     def isDevelopping?

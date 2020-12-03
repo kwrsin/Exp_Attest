@@ -3,50 +3,68 @@ require 'singleton'
 require './tools'
 
 class ChallengeFactory
-    @@path = './dump'
+    @@path = '../store'
     include Singleton
 
-    def initialize
-        @challenges = {}
-        load
+    def setting(setter = nil)
+        setter(self) if setter
+        self
     end
 
-    def challenge(key)
-        if key != nil
-            return @challenges[key]
+    def path(dumpPath = nil)
+        if dumpPath
+            ChallengeFactory.setDumpPath path
+        end
+    end
+
+    def self.setDumpPath(path)
+        @@path = path
+    end
+
+    def challenge(uuid = nil)
+        if uuid != nil
+            return load! uuid
         else
             newchallenge = {}
-            newchallenge[:uuid] = uuid
+            newchallenge[:uuid] = generateUuid()
             newchallenge[:create_at] = Time.now.to_i
-            @challenges[newchallenge[:uuid]] = newchallenge
-            save
-            return newchallenge
+            @challenge = newchallenge
+            save!
+            return @challenge
         end
     end
 
-    def set(id, params)
-        challenge = @challenges[id]
-        if challenge != nil
-            params.each do |key, value|
-                challenge[key.to_sym] = value
-            end
-            @challenges[id] = challenge
-            save
+    def set(uuid, params)
+        load! uuid
+        return if @challenge == nil || params == nil
+        params.each do |key, value|
+            @challenge[key.to_sym] = value
         end
+        update!
     end
 
-    def save
-        dump = Marshal.dump(@challenges)
-        File.write(@@path, dump)
+    def save!
+        path = File.join(@@path, "#{@challenge[:uuid]}_Dump")
+        raise "could not save #{path}." if FileTest.exist?(path)
+        update!
     end
 
-    def load
-        if FileTest.exist?(@@path)
-            @challenges = Marshal.load(File.read(@@path))
+    def update!
+        path = File.join(@@path, "#{@challenge[:uuid]}_Dump")
+        dump = Marshal.dump(@challenge)
+        File.write(path, dump)
+    end
+
+    def load!(uuid)
+        path = File.join(@@path, "#{uuid}_Dump")
+        if FileTest.exist?(path)
+            @challenge = Marshal.load(File.read(path))
+            return @challenge
         end
+        raise "could not find #{path}."
     end
 
-    def getChallenges
-        @challenges
+    def getChallenge
+        @challenge
     end
 end

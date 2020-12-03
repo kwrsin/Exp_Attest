@@ -1,6 +1,6 @@
 require 'securerandom'
 
 
-def uuid
+def generateUuid
     SecureRandom.uuid.to_str.split("-").join
 end
