@@ -55,7 +55,7 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         counter = newCounter
         raise 'counter is invalid!!' if counter < 0
 
-        # STEP5
+        # STEP6
         raise 'challenge is invalid!!' if !validChallenge?
         
         return counter

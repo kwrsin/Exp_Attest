@@ -11,7 +11,6 @@ class TC_Attest < Test::Unit::TestCase
     def setup
         data = File.read('../store/assert_param')
         @params = Marshal.load(data)
-        ENV['ATTEST_APPID'] = Constants::APPLE_APPID
     end
 
     def teardown
