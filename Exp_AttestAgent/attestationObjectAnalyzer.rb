@@ -1,11 +1,8 @@
-
 require 'rubygems'
 require 'bundler/setup'
 
 require 'base64'
-
 require 'cbor'
-
 require 'openssl'
 # require 'net/http'
 
@@ -66,13 +63,12 @@ PEM
     end
 
     public
-
     def verify!
         # STEP1
         raise 'chains are invalid!!' if !isValidChains?
         
         # STEP2
-        h = appendChallengeHash(@cb['authData'], @challenge)
+        h = appendHash(@cb['authData'], @challenge)
 
         # STEP3
         nonce = getNonceFromAuthData(h)
@@ -135,14 +131,14 @@ PEM
         OpenSSL::Digest::SHA256.new(value).digest
     end
 
-    def appendChallengeHash(authData, challenge)
-        digest = toDigest challenge
+    def appendHash(authData, obj)
+        digest = toDigest obj
         authData << digest
         authData
     end
 
-    def getNonceFromAuthData(authDataWithChallenge)
-        digest = toDigest authDataWithChallenge
+    def getNonceFromAuthData(authDataWithObj)
+        digest = toDigest authDataWithObj
         digest
     end
 
@@ -181,9 +177,13 @@ PEM
         return hashedAppId == hashedRpId
     end
 
-    def isZeroCounter?
+    def getCounter
         counter = @counter.unpack('N1').first
-        return counter === 0
+        counter
+    end
+
+    def isZeroCounter?
+        return getCounter === 0
     end
 
     def isDevelopping?

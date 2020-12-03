@@ -12,15 +12,78 @@ import CryptoKit
 
 struct ContentView: View {
     @State var challenge:String = "----"
+    @State var attestResponse: Int = 0
+    @State var premiumContents: String = "----"
     static let domain = "http://192.168.11.2:4567"
     var body: some View {
+        Text("status: \(attestResponse)")
         Text(challenge)
             .padding()
         Button(action: {
             attest()
-        }, label: {Text("button")})
+        }, label: {Text("Attest")})
+        Text(premiumContents)
+            .padding()
+        Button(action: {
+            assert()
+        }, label: {Text("Assert")})
     }
     
+    func assert() {
+        let keyId = UserDefaults.standard.string(forKey: "attest_key")
+        let uuid = UserDefaults.standard.string(forKey: "uuid")
+        let request = [
+            "action": "get_contents",
+            "challenge": uuid,
+        ]
+        guard let clientData = try? JSONEncoder().encode(request) else {return}
+        let clientDataHash = Data(SHA256.hash(data: clientData))
+        let service = DCAppAttestService.shared
+        service.generateAssertion(keyId!, clientDataHash: clientDataHash) { assertion, error in
+            guard error == nil else {return}
+            var req_assertion = URLRequest(url: URL(string: "\(Self.domain)/assertion")!)
+            
+            req_assertion.httpMethod = "POST"
+
+            var attestationObject = [String: Any]()
+            attestationObject["clientData"] = clientData.base64EncodedString(options: [])
+                .addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed)!
+            attestationObject["assertion"] = assertion!.base64EncodedString(options: [])
+                .addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed)!
+            var params = [String]()
+            attestationObject.forEach { key, value in
+                params.append("\(key)=\(value)")
+            }
+            req_assertion.httpBody = params.joined(separator: "&").data(using: .utf8)
+            req_assertion.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+            
+            URLSession.shared.dataTask(with: req_assertion) {data, res, error in
+                guard let data = data, let res = res else {
+                    if let error = error {
+                        print(error.localizedDescription)
+                    }
+                    
+                    
+                    
+                    return
+                }
+                let httpres = res as! HTTPURLResponse
+                print(httpres.statusCode)
+                
+                var result = [String:Any]()
+                do {
+                    result = try JSONSerialization.jsonObject(with: data, options: []) as! [String : Any]
+                } catch let err {
+                    print(err)
+                }
+                let contents = result["result"] as! String
+                DispatchQueue.main.async {
+                    premiumContents = contents
+                }
+            }.resume()
+
+        }
+    }
 
     func attest() {
         let service = DCAppAttestService.shared
@@ -47,10 +110,6 @@ struct ContentView: View {
                             }
                             return
                         }
-                        
-                        //TODO: save the keyId, if getting a key/pair's keyId successfully.
-                        UserDefaults.standard.setValue(keyId, forKey: "attest_key")
-
                         
                         let root = result["challenge"] as! [String: Any]
                         let uuid = root["uuid"] as! String
@@ -89,9 +148,19 @@ struct ContentView: View {
                                     }
                                     let httpres = res as! HTTPURLResponse
                                     print(httpres.statusCode)
-                                    //                    DispatchQueue.main.async {
-                                    //                        challenge = sha256.description
-                                    //                    }
+                                    //TODO: save the keyId, if getting a key/pair's keyId successfully.
+                                    UserDefaults.standard.setValue(keyId, forKey: "attest_key")
+                                    UserDefaults.standard.setValue(uuid, forKey: "uuid")
+                                    var result = [String:Any]()
+                                    do {
+                                        result = try JSONSerialization.jsonObject(with: data, options: []) as! [String : Any]
+                                    } catch let err {
+                                        print(err)
+                                    }
+                                    let status = result["result"] as! Int
+                                    DispatchQueue.main.async {
+                                        attestResponse = status
+                                    }
                                 }.resume()
 
                             }

@@ -69,12 +69,12 @@ module StrageManager
             end
 
             def save!(diff = nil)
-                railse "could not save @path." if FileTest.exists? @path
-                @records = merge(diff) if diff
-                update!     
+                raise "could not save @path." if FileTest.exists? @path
+                update!(diff)     
             end
-
-            def update!
+            
+            def update!(diff = nil)
+                @records = merge(diff) if diff
                 records = Marshal.dump(@records)
                 File.write(@path, records)
                 @records       

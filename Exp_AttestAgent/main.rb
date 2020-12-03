@@ -9,6 +9,7 @@ require 'logger'
 require './constants'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
+require './assertionObjectAnalyzer'
 require './strageManager'
 
 set :bind, '0.0.0.0'
@@ -44,7 +45,7 @@ end
 
 get '/challenge' do
     #TODO: setting the challenge's lifetime.
-    #TODO: priventing multi posts from same user.
+    #TODO: preventing multi posts from same user.
     val = settings.cf.challenge(nil)
     json :challenge => val
 end
@@ -71,3 +72,16 @@ post '/attestation/:uuid' do
     json :result => result
 end
 
+post '/assertion' do
+    result = Constants::RESPONSE_FAULT
+
+    begin
+        appId = ENV['ATTEST_APPID'] || ''
+        analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], appId)
+        result = Constants::RESPONSE_SUCCESS if analyzer.verify! > 0
+    rescue => error
+        logger.error error.message
+    end
+
+    json :result => "HELLOWORLD => #{result}"
+end
