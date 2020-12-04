@@ -94,4 +94,15 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         end
         raise 'updating fault!!'
     end
+
+    def delete!
+        if verify! > 0
+            StrageManager::Strage.instance().getStrage(:file, {
+                challenge: "#{@parsedClientData["challenge"]}*",
+                path: Constants::STORE_PATH,
+            }).remove!
+            return true
+        end
+        raise 'deleting fault!!'
+    end
 end

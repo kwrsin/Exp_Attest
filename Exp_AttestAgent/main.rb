@@ -6,7 +6,6 @@ require 'sinatra/reloader'
 require 'sinatra/json'
 require 'sinatra/custom_logger'
 require 'logger'
-require 'fileutils'
 require './constants'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
@@ -80,16 +79,15 @@ post '/assertion' do
     json :result => "HELLOWORLD => #{result}"
 end
 
-delete '/checked/:uuid' do
+delete '/checked' do
     result = Constants::RESPONSE_FAULT
     begin
+        appId = ENV['ATTEST_APPID'] || ''
         analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], appId)
-        deleteAttestedFiles(params[:uuid]) if analyzer.verify! > 0
-
-        result = Constants::RESPONSE_SUCCESS
+        result = Constants::RESPONSE_SUCCESS if analyzer.delete!
     rescue => error
         logger.error error.message
     end
 
-    json :result => "#{result}"
+    json :result => result
 end

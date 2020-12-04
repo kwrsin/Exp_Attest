@@ -14,6 +14,7 @@ struct ContentView: View {
     @State var challenge:String = "----"
     @State var attestResponse: Int = 0
     @State var premiumContents: String = "----"
+    @State var removed = ""
     static let domain = "http://192.168.11.2:4567"
     var body: some View {
         Text("status: \(attestResponse)")
@@ -27,6 +28,66 @@ struct ContentView: View {
         Button(action: {
             assert()
         }, label: {Text("Assert")})
+        Text(removed)
+        Button(action: {
+            delete()
+        }, label: {Text("Remove")})
+    }
+    
+    func delete() {
+        let keyId = UserDefaults.standard.string(forKey: "attest_key")
+        let uuid = UserDefaults.standard.string(forKey: "uuid")
+        let request = [
+            "challenge": uuid,
+        ]
+        guard let clientData = try? JSONEncoder().encode(request) else {return}
+        let clientDataHash = Data(SHA256.hash(data: clientData))
+        let service = DCAppAttestService.shared
+        service.generateAssertion(keyId!, clientDataHash: clientDataHash) { assertion, error in
+            guard error == nil else {return}
+            var req_assertion = URLRequest(url: URL(string: "\(Self.domain)/checked")!)
+            
+            req_assertion.httpMethod = "DELETE"
+
+            var attestationObject = [String: Any]()
+            attestationObject["clientData"] = clientData.base64EncodedString(options: [])
+                .addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed)!
+            attestationObject["assertion"] = assertion!.base64EncodedString(options: [])
+                .addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed)!
+            var params = [String]()
+            attestationObject.forEach { key, value in
+                params.append("\(key)=\(value)")
+            }
+            req_assertion.httpBody = params.joined(separator: "&").data(using: .utf8)
+            req_assertion.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+            
+            URLSession.shared.dataTask(with: req_assertion) {data, res, error in
+                guard let data = data, let res = res else {
+                    if let error = error {
+                        print(error.localizedDescription)
+                    }
+                    
+                    
+                    
+                    return
+                }
+                let httpres = res as! HTTPURLResponse
+                print(httpres.statusCode)
+                
+                var result = [String:Any]()
+                do {
+                    result = try JSONSerialization.jsonObject(with: data, options: []) as! [String : Any]
+                } catch let err {
+                    print(err)
+                }
+                let state = result["result"] as! Int
+                DispatchQueue.main.async {
+                    removed = "\(state)"
+                }
+            }.resume()
+
+        }
+
     }
     
     func assert() {
