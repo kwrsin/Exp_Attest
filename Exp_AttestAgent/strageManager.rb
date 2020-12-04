@@ -1,4 +1,5 @@
 require 'singleton'
+require './tools'
 
 module StrageManager
     class Strage
@@ -81,11 +82,7 @@ module StrageManager
             end
 
             def remove!
-                begin
-                    File.delete(@path)
-                rescue
-                    raise $!
-                end
+                deleteFiles(@path)
             end
         end
 

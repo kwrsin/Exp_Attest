@@ -55,7 +55,7 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         counter = newCounter
         raise 'counter is invalid!!' if counter < 0
 
-        # STEP5
+        # STEP6
         raise 'challenge is invalid!!' if !validChallenge?
         
         return counter
@@ -80,6 +80,10 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         @parsedClientData["challenge"] == @records[:challenge]
     end
 
+    def validatedRequest
+        return @parsedClientData if updateCounter!
+    end
+
     def updateCounter!
         counter = verify!
         if counter > 0
@@ -93,5 +97,16 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
             return true
         end
         raise 'updating fault!!'
+    end
+
+    def delete!
+        if updateCounter!
+            StrageManager::Strage.instance().getStrage(:file, {
+                challenge: "#{@parsedClientData["challenge"]}_*",
+                path: Constants::STORE_PATH,
+            }).remove!
+            return true
+        end
+        raise 'deleting fault!!'
     end
 end

@@ -14,7 +14,6 @@ class TC_Attest < Test::Unit::TestCase
         @path = './store'
         ChallengeFactory.setDumpPath @path 
         @cf = ChallengeFactory.instance
-        ENV['ATTEST_APPID'] = Constants::APPLE_APPID
     end
 
     def teardown
