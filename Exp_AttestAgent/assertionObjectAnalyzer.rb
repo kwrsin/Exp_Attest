@@ -80,6 +80,10 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         @parsedClientData["challenge"] == @records[:challenge]
     end
 
+    def validatedRequest
+        return @parsedClientData if updateCounter!
+    end
+
     def updateCounter!
         counter = verify!
         if counter > 0
@@ -96,9 +100,9 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
     end
 
     def delete!
-        if verify! > 0
+        if updateCounter!
             StrageManager::Strage.instance().getStrage(:file, {
-                challenge: "#{@parsedClientData["challenge"]}*",
+                challenge: "#{@parsedClientData["challenge"]}_*",
                 path: Constants::STORE_PATH,
             }).remove!
             return true

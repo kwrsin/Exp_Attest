@@ -10,6 +10,7 @@ require './constants'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
 require './assertionObjectAnalyzer'
+require './requestProcessor'
 
 set :bind, '0.0.0.0'
 
@@ -71,18 +72,19 @@ post '/assertion' do
         appId = ENV['ATTEST_APPID'] || ''
 
         analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], appId)
-        result = Constants::RESPONSE_SUCCESS if analyzer.updateCounter!
+        result = RequestProcessor::Processor.instance().process(analyzer.validatedRequest)
     rescue => error
         logger.error error.message
     end
 
-    json :result => "HELLOWORLD => #{result}"
+    json :result => result
 end
 
 delete '/checked' do
     result = Constants::RESPONSE_FAULT
     begin
         appId = ENV['ATTEST_APPID'] || ''
+
         analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], appId)
         result = Constants::RESPONSE_SUCCESS if analyzer.delete!
     rescue => error
