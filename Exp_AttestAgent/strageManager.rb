@@ -1,4 +1,5 @@
 require 'singleton'
+require './constants'
 require './tools'
 
 module StrageManager
@@ -59,6 +60,11 @@ module StrageManager
             def prop(key)
                 @records[key]
             end
+
+            def getMode!
+                raise "getMode! is Not Implemented!!"
+            end
+
         end
 
         class FileStrage < BaseStrage
@@ -84,6 +90,11 @@ module StrageManager
             def remove!
                 deleteFiles(@path)
             end
+
+            def getMode!
+                raise "getMode! is Not Implemented!!"
+            end
+
         end
 
         class DBStrage < BaseStrage
