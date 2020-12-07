@@ -61,23 +61,23 @@ class AttestationObjectAnalyzer
         nonce = getNonceFromAuthData(h)
 
         # STEP4
-        raise 'nonce is NOT same!!' if !isSameNonce?(nonce)
+        raise 'nonce is NOT same!!' unless isSameNonce?(nonce)
 
         # STEP5
-        raise 'key is invalid!!' if !isValidKeyId?
+        raise 'key is invalid!!' unless isValidKeyId?
 
         # STEP6
-        raise 'RrId is invalid!!' if !isValidRrId?
+        raise 'RrId is invalid!!' unless isValidRrId?
 
         # STEP7
-        raise 'Counter is not zero!!' if !isZeroCounter?
+        raise 'Counter is not zero!!' unless isZeroCounter?
 
         # STEP8
         mode = :production
         mode = :development if isDevelopping?
 
         # STEP9
-        raise 'CredentialId is invalid!!' if !isValidCredentialId?
+        raise 'CredentialId is invalid!!' unless isValidCredentialId?
 
         return mode
     end

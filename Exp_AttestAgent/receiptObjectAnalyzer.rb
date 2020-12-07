@@ -22,6 +22,8 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         ca_pem = File.read("./AppleRootCA-G3.cer")
         @ca_cartification = 
             OpenSSL::X509::Certificate.new(ca_pem)
+        @intermidiate_cartification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[1])
+        @leaf_cartification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[2])
 
     end
 
@@ -48,12 +50,36 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         # p fields
 
         #STEP1
-        raise "CA invalid" unless isValidSignature! 
+        raise 'the Signature is invalid' unless isValidSignature? 
 
         #STEP2
+        raise 'chains are invalid!!' unless isValidChains?
+        
+        #STEP3
+        # REF: SEE initialize
+
+        #STEP4
+        # raise 'an appId is not match to a receipt\'s one.' unless isSameAppId?
+
+        #STEP5
+        # raise '5 minutes over' unless fiveMinutesOver?
+        
+        #STEP6
+        # raise 'the public key is invalid' unless isValidPK?
+
+        # TODO: Metric checking
     end
 
-    def isValidSignature!
+    def isValidPK?
+    end
+
+    def isSameAppId?
+    end
+
+    def fiveMinutesOver?
+    end
+
+    def isValidSignature?
         store = OpenSSL::X509::Store.new
         store.add_cert @ca_cartification
         @pkcs7.verify(nil, store)
@@ -77,17 +103,16 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             Constants::APPLE_URL_PRDUCTION :
             Constants::APPLE_URL_DEVLOPMENT
 
-        mask = "#{challenge}_Receipt_*"
-        files = Dir.glob(File.join(Constants::STORE_PATH, mask))
-        filename = files.sort.last || ""
-        raise "could not find last receipt." if filename.empty?
+        # mask = "#{challenge}_Receipt_*"
+        # files = Dir.glob(File.join(Constants::STORE_PATH, mask))
+        # filename = files.sort.last || ""
+        # raise "could not find last receipt." if filename.empty?
         
-        lastReceipt = StrageManager::Strage.instance().getStrage(:file, {
-            challenge: filename,
-            path: Constants::STORE_PATH,
-        })
-        raise "could not get last receipt." unless lastReceipt
-        p lastReceipt
+        # lastReceipt = StrageManager::Strage.instance().getStrage(:file, {
+        #     challenge: filename,
+        #     path: Constants::STORE_PATH,
+        # })
+        # raise "could not get last receipt." unless lastReceipt
 
         receipt = nil
         # http.request_post(url, lastReceipt, {
