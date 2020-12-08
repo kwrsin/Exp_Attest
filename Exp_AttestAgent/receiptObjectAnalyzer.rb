@@ -2,6 +2,7 @@ require 'base64'
 require 'openssl'
 require 'net/http'
 require 'cbor'
+require 'time'
 
 require './constants'
 require './strageManager'
@@ -38,6 +39,8 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     FIELD_NOT_BEFORE = 19
     FIELD_EXPIRERATION_TIME = 21
 
+    METRIC_PASS = -1
+
     def field(field)
         field = @fields.find do |v|
             v.value[0].value == field
@@ -60,15 +63,17 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         raise 'an appId is not match to a receipt\'s one.' unless isSameAppId?
         
         #STEP5
-        # raise '5 minutes over' unless fiveMinutesOver?
+        raise '5 minutes over' if fiveMinutesOver?
         
         #STEP6
         raise 'the public key is invalid' unless isValidPublicKey?
+        
         # TODO: Metrics checking
         # raise 'Bad Metrics' unless isValidMetrics?
     end
 
     # def isValidMetrics?
+        # return METRIC_PASS if field(FIELD_RECEIPT_TYPE) == :ATTEST.to_s
     # end
 
     def isValidPublicKey?
@@ -81,6 +86,8 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     end
 
     def fiveMinutesOver?
+        creationTime = Time.parse(field(FIELD_CREATION_TIME))
+        Time.now - creationTime > 300 
     end
 
     def isValidSignature?
