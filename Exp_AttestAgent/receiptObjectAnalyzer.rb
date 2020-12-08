@@ -10,10 +10,10 @@ require './attestationObjectAnalyzer'
 
 
 class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
-    def initialize(receipt, challenge)
+    def initialize(receipt, challenge, appId)
         @receipt = receipt
         @challenge = challenge
-
+        @appId = appId
         @pkcs7 = OpenSSL::PKCS7.new(@receipt)
         octetstring = OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[2].value[1].value[0].value
         @fields = OpenSSL::ASN1.decode(octetstring).value
@@ -45,22 +45,19 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     end
 
     def verify!
-        # octetstring = OpenSSL::ASN1.decode(pkcs7.to_der).value.last.value.first.value[4].value.last.value.last.value
-        # fields = OpenSSL::ASN1.decode(octetstring).value
-        # p fields
 
         #STEP1
-        raise 'the Signature is invalid' unless isValidSignature? 
+        # raise 'the Signature is invalid' unless isValidSignature? 
 
         #STEP2
-        raise 'chains are invalid!!' unless isValidChains?
+        # raise 'chains are invalid!!' unless isValidChains?
         
         #STEP3
         # REF: SEE initialize
 
         #STEP4
         # raise 'an appId is not match to a receipt\'s one.' unless isSameAppId?
-
+        
         #STEP5
         # raise '5 minutes over' unless fiveMinutesOver?
         
@@ -74,6 +71,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     end
 
     def isSameAppId?
+        field(FIELD_APPID) == @appId
     end
 
     def fiveMinutesOver?
@@ -97,6 +95,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             "503": {error: "Service Unavailable"},
         }
     end
+
     def self.requestReceipt(challenge, mode)
         jwt = ENV['JWT']
         url = mode == :production ? 
@@ -130,11 +129,11 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         return receipt
     end
 
-    def self.save!(challenge, receipt, count = 0)
-        StrageManager::Strage.instance().getStrage(:file, {
-            challenge: "#{challenge}_Receipt_#{count.to_s.rjust(Constants::COLUMN_WIDTH, '0')}",
-            path: Constants::STORE_PATH,
-            records: receipt
-        }).save!
-    end
+    # def self.save!(challenge, receipt, count = 0)
+    #     StrageManager::Strage.instance().getStrage(:file, {
+    #         challenge: "#{challenge}_Receipt_#{count.to_s.rjust(Constants::COLUMN_WIDTH, '0')}",
+    #         path: Constants::STORE_PATH,
+    #         records: receipt
+    #     }).save!
+    # end
 end

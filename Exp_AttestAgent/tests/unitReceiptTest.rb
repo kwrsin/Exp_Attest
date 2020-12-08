@@ -14,8 +14,9 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     # def test_requestReceipt
     #     ReceiptObjectAnalyzer.requestReceipt("test0001", :development)
     # end
-    
+
     def test_verify!
+        appId = ENV['ATTEST_APPID'] || ''
         filename = "test_Attested"
         lastReceipt = StrageManager::Strage.instance().getStrage(:file, {
             challenge: filename,
@@ -23,7 +24,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
         })
         receipt = lastReceipt.prop(:receipt)
         challenge = lastReceipt.prop(:challenge)
-        receiptObject = ReceiptObjectAnalyzer.new(receipt, challenge)
+        receiptObject = ReceiptObjectAnalyzer.new(receipt, challenge, appId)
         receiptObject.verify!
     end
 end
