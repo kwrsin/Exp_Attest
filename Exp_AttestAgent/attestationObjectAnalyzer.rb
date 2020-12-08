@@ -209,5 +209,17 @@ PEM
         ca_pem
     end
 
-
+    # def self.convertPublicKey(certification)
+    #     return nil if certification.to_s.empty?
+        
+    #     public_key = certification.public_key.to_der
+    #     asn1 = OpenSSL::ASN1.decode(public_key) 
+    #     pub_key = nil 
+    #     asn1.value.each {|v|
+    #         if v.tag == 3 
+    #             pub_key = v.value
+    #         end
+    #     }
+    #     pub_key
+    # end
 end

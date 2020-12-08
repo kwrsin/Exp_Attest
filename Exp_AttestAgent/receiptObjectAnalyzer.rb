@@ -10,7 +10,7 @@ require './attestationObjectAnalyzer'
 
 
 class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
-    def initialize(receipt, challenge, appId)
+    def initialize(receipt, challenge, cert, appId)
         @receipt = receipt
         @challenge = challenge
         @appId = appId
@@ -24,6 +24,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             OpenSSL::X509::Certificate.new(ca_pem)
         @intermidiate_cartification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[1])
         @leaf_cartification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[2])
+        @attestedPK = OpenSSL::X509::Certificate.new(cert).public_key
 
     end
 
@@ -47,27 +48,32 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     def verify!
 
         #STEP1
-        # raise 'the Signature is invalid' unless isValidSignature? 
+        raise 'the Signature is invalid' unless isValidSignature? 
 
         #STEP2
-        # raise 'chains are invalid!!' unless isValidChains?
+        raise 'chains are invalid!!' unless isValidChains?
         
         #STEP3
         # REF: SEE initialize
 
         #STEP4
-        # raise 'an appId is not match to a receipt\'s one.' unless isSameAppId?
+        raise 'an appId is not match to a receipt\'s one.' unless isSameAppId?
         
         #STEP5
         # raise '5 minutes over' unless fiveMinutesOver?
         
         #STEP6
-        # raise 'the public key is invalid' unless isValidPK?
-
-        # TODO: Metric checking
+        raise 'the public key is invalid' unless isValidPublicKey?
+        # TODO: Metrics checking
+        # raise 'Bad Metrics' unless isValidMetrics?
     end
 
-    def isValidPK?
+    # def isValidMetrics?
+    # end
+
+    def isValidPublicKey?
+        cert = OpenSSL::X509::Certificate.new field(FIELD_ATTEST_PUBLIC_KEY)
+        cert.public_key.to_pem == @attestedPK.to_pem
     end
 
     def isSameAppId?

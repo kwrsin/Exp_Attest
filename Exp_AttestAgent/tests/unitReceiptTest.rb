@@ -24,7 +24,8 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
         })
         receipt = lastReceipt.prop(:receipt)
         challenge = lastReceipt.prop(:challenge)
-        receiptObject = ReceiptObjectAnalyzer.new(receipt, challenge, appId)
+        cert = lastReceipt.prop(:intermidiate_cartification)
+        receiptObject = ReceiptObjectAnalyzer.new(receipt, challenge, cert, appId)
         receiptObject.verify!
     end
 end
