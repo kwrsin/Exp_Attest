@@ -8,8 +8,6 @@ require './constants'
 require './strageManager'
 require './attestationObjectAnalyzer'
 
-
-
 class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     def initialize(receipt, challenge, cert, appId)
         @receipt = receipt
@@ -49,6 +47,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     end
 
     def verify!
+        # REF: https://developer.apple.com/documentation/devicecheck/assessing_fraud_risk
 
         #STEP1
         raise 'the Signature is invalid' unless isValidSignature? 
