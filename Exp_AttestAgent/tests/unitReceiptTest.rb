@@ -17,9 +17,9 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
 
     # def test_verify!
     #     appId = ENV['ATTEST_APPID'] || ''
-    #     filename = "test_Attested"
+    #     keyName = "test_Attested"
     #     lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-    #         challenge: filename,
+    #         challenge: keyName,
     #         path: Constants::STORE_PATH,
     #     })
     #     receipt = lastReceipt.prop(:receipt)

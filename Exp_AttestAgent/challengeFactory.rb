@@ -3,8 +3,8 @@ require 'singleton'
 require './tools'
 
 class ChallengeFactory
-    @@path = Constants::STORE_PATH
     include Singleton
+    @@path = Constants::STORE_PATH
 
     def setting
         yield(self) if block_given?

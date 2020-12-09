@@ -27,9 +27,9 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
             auth_data.byteslice(33...37),
             # auth_data.byteslice(33...-1)
         ]
-        @filename = "#{@parsedClientData["challenge"]}_Attested"
+        @keyName = "#{@parsedClientData["challenge"]}_Attested"
         @records = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-            challenge: @filename,
+            challenge: @keyName,
             path: Constants::STORE_PATH
         }).load!
         @keyId = @records[:keyId]
@@ -89,7 +89,7 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         if counter > 0
             @records[:counter] = counter
             StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-                challenge: @filename,
+                challenge: @keyName,
                 path: Constants::STORE_PATH,
             }).update!({
                 counter: counter,

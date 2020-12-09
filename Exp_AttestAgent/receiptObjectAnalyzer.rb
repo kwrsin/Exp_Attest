@@ -121,11 +121,11 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         unless lastReceipt
             mask = "#{challenge}_Receipt_*"
             files = Dir.glob(File.join(Constants::STORE_PATH, mask))
-            filename = files.sort.last || ""
-            raise "could not find last receipt." if filename.empty?
+            keyName = files.sort.last || ""
+            raise "could not find last receipt." if keyName.empty?
             
             lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-                challenge: filename,
+                challenge: keyName,
                 path: Constants::STORE_PATH,
             })
             raise "could not get last receipt." unless lastReceipt
