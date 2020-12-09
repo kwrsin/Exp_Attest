@@ -6,7 +6,7 @@ module StrageManager
     class Strage
         include Singleton
 
-        def getStrage(strageType = :file, options = nil)
+        def getStrage(strageType = Constants::STRAGE_TYPE, options = nil)
             case strageType
             when :db
                 return StrageHelpers::DBStrage.new(options)
@@ -68,7 +68,7 @@ module StrageManager
         end
 
         class FileStrage < BaseStrage
-            @strageName = :File
+            @strageName = :FILE
 
             def load!
                 @records = Marshal.load(File.read(@path)) if FileTest.exists? @path

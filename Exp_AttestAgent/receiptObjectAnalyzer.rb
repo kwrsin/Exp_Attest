@@ -108,8 +108,12 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         }
     end
 
+    def self.getJWT()
+
+    end
+
     def self.requestReceipt(lastReceipt, challenge, mode)
-        jwt = ENV['JWT']
+        jwt = ReceiptObjectAnalyzer.getJWT()
         url = mode == :production ? 
             Constants::APPLE_URL_PRDUCTION :
             Constants::APPLE_URL_DEVLOPMENT
@@ -120,7 +124,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             filename = files.sort.last || ""
             raise "could not find last receipt." if filename.empty?
             
-            lastReceipt = StrageManager::Strage.instance().getStrage(:file, {
+            lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
                 challenge: filename,
                 path: Constants::STORE_PATH,
             })
@@ -147,7 +151,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     end
 
     def self.save!(challenge, receipt, count = 0)
-        StrageManager::Strage.instance().getStrage(:file, {
+        StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
             challenge: "#{challenge}_Receipt_#{count.to_s.rjust(Constants::COLUMN_WIDTH, '0')}",
             path: Constants::STORE_PATH,
             records: receipt

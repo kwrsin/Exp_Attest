@@ -21,13 +21,13 @@ class TC_StrageManager < Test::Unit::TestCase
     #         challenge: uuid,
     #         path: @path
     #     }
-    #     strage = StrageManager::Strage.instance().getStrage(:file, options)
+    #     strage = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, options)
     #     result = strage.save!({
     #         counter: 99,
     #         pr_id: 2222,
     #         message: "hello world",
     #     })
-    #     strageNew = StrageManager::Strage.instance().getStrage(:file, options)
+    #     strageNew = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, options)
     #     assert_equal(strageNew.prop(:uuid), "03b0549efe2941cfa10577561ffebc13")
     #     assert_equal(strageNew.prop(:create_at), 1606780767)
     #     assert_equal(strageNew.prop(:counter), 99)
@@ -36,7 +36,7 @@ class TC_StrageManager < Test::Unit::TestCase
     # end
 
     def test_removeFile
-        StrageManager::Strage.instance().getStrage(:file, {
+        StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
             challenge: "94308*",
             path: Constants::STORE_PATH,
         }).remove!

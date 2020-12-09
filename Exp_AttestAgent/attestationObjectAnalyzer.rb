@@ -94,7 +94,7 @@ class AttestationObjectAnalyzer
             mode: mode,
             challenge_create_at: @cb['create_at'],
         }
-        result = StrageManager::Strage.instance().getStrage(:file, {
+        result = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
             challenge: "#{@challenge}_Attested",
             path: Constants::STORE_PATH,
             records: records

@@ -16,7 +16,6 @@ set :bind, '0.0.0.0'
 
 configure do
     set :cf, (ChallengeFactory.instance().setting do |me| me.path Constants::STORE_PATH end)
-    set :store_path, Constants::STORE_PATH
 end
 
 configure :development do
