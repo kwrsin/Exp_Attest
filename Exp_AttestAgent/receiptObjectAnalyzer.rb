@@ -18,7 +18,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         @fields = OpenSSL::ASN1.decode(octetstring).value
 
         # REF: https://developer.apple.com/documentation/devicecheck/assessing_fraud_risk
-        ca_pem = File.read("./AppleRootCA-G3.cer")
+        ca_pem = File.read(Constants::ATTEST_APPLE_ROOT_CA_PATH)
         @ca_cartification = 
             OpenSSL::X509::Certificate.new(ca_pem)
         @intermidiate_cartification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[1])
