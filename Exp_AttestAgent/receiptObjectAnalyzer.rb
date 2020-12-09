@@ -108,44 +108,49 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         }
     end
 
-    def self.requestReceipt(challenge, mode)
+    def self.requestReceipt(lastReceipt, challenge, mode)
         jwt = ENV['JWT']
         url = mode == :production ? 
             Constants::APPLE_URL_PRDUCTION :
             Constants::APPLE_URL_DEVLOPMENT
 
-        # mask = "#{challenge}_Receipt_*"
-        # files = Dir.glob(File.join(Constants::STORE_PATH, mask))
-        # filename = files.sort.last || ""
-        # raise "could not find last receipt." if filename.empty?
-        
-        # lastReceipt = StrageManager::Strage.instance().getStrage(:file, {
-        #     challenge: filename,
-        #     path: Constants::STORE_PATH,
-        # })
-        # raise "could not get last receipt." unless lastReceipt
+        unless lastReceipt
+            mask = "#{challenge}_Receipt_*"
+            files = Dir.glob(File.join(Constants::STORE_PATH, mask))
+            filename = files.sort.last || ""
+            raise "could not find last receipt." if filename.empty?
+            
+            lastReceipt = StrageManager::Strage.instance().getStrage(:file, {
+                challenge: filename,
+                path: Constants::STORE_PATH,
+            })
+            raise "could not get last receipt." unless lastReceipt
+        end
+
+        lastReceipt = Base64.encode64(lastReceipt)
 
         receipt = nil
-        # http.request_post(url, lastReceipt, {
-        #     Authorization: jwt
-        # }) { |response|
-        #     if response.status == 200
-        #         response.read_body do |new_receipt|
-        #             receipt = new_receipt
-        #             ReceiptObjectAnalyzer.save!(challenge, receipt, files.count + 1)
-        #         end
-        #     else
-        #         raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[response.status.to_s] || ''}"
-        #     end
-        # }    
+        http.request_post(url, lastReceipt, {
+            Authorization: jwt
+        }) { |response|
+            if response.status == 200
+                response.read_body do |new_receipt|
+                    pp new_receipt
+                    receipt = Base64.decode64(new_receipt)
+                    ReceiptObjectAnalyzer.save!(challenge, receipt, files.count + 1)
+                end
+            else
+                raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[response.status.to_s] || ''}"
+            end
+        }    
         return receipt
     end
 
-    # def self.save!(challenge, receipt, count = 0)
-    #     StrageManager::Strage.instance().getStrage(:file, {
-    #         challenge: "#{challenge}_Receipt_#{count.to_s.rjust(Constants::COLUMN_WIDTH, '0')}",
-    #         path: Constants::STORE_PATH,
-    #         records: receipt
-    #     }).save!
-    # end
+    def self.save!(challenge, receipt, count = 0)
+        StrageManager::Strage.instance().getStrage(:file, {
+            challenge: "#{challenge}_Receipt_#{count.to_s.rjust(Constants::COLUMN_WIDTH, '0')}",
+            path: Constants::STORE_PATH,
+            records: receipt
+        }).save!
+    end
 end
