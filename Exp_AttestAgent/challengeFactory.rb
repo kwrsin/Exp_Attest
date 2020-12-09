@@ -3,11 +3,11 @@ require 'singleton'
 require './tools'
 
 class ChallengeFactory
-    @@path = '../store'
+    @@path = Constants::STORE_PATH
     include Singleton
 
-    def setting(setter = nil)
-        setter(self) if setter
+    def setting
+        yield(self) if block_given?
         self
     end
 
