@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     cbor (0.5.9.6)
+    jwt (2.2.2)
     multi_json (1.15.0)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
@@ -30,6 +31,7 @@ PLATFORMS
 
 DEPENDENCIES
   cbor
+  jwt
   sinatra
   sinatra-contrib
   test-unit

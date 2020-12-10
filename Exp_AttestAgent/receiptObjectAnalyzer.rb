@@ -3,6 +3,7 @@ require 'openssl'
 require 'net/http'
 require 'cbor'
 require 'time'
+require 'json'
 
 require './constants'
 require './strageManager'
@@ -108,15 +109,49 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         }
     end
 
-    def self.getJWT()
+    def self.asn1_to_raw(signature, public_key)
+        # REF: https://github.com/jwt/ruby-jwt/blob/fb29072d96110d15423df1113e43d8cfb5cf279c/lib/jwt/security_utils.rb#L29
+        byte_size = (public_key.group.degree + 7) / 8
+        OpenSSL::ASN1.decode(signature).value.map { |value| value.value.to_s(2).rjust(byte_size, "\x00") }.join
+    end
 
+    def self.encode64(str)
+        Base64.encode64(str).tr('+/', '-_').gsub(/[\n=]/, '')
+    end
+
+    def self.getJWT
+        # REF: https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns#2947602
+        keyId = ENV['JWT_KEY_ID']
+        teamId = ENV['TEAM_ID']
+        filename = ENV['P8_PATH']
+        params = []
+        params << ReceiptObjectAnalyzer.encode64({
+            :alg => "ES256",
+            :kid => "#{keyId}"
+        }.to_json)
+        params << ReceiptObjectAnalyzer.encode64({
+            :iss => "#{teamId}",
+            :iat => Time.now.to_i
+        }.to_json)
+        headerAndPlayload = params.join('.')
+        # REF: https://stackoverrun.com/ja/q/1139890
+        key = OpenSSL::PKey::EC.new(
+            File.read(
+                File.join(Constants::STORE_PATH, filename)))
+        
+        # REF: https://github.com/jwt/ruby-jwt/blob/fb29072d96110d15423df1113e43d8cfb5cf279c/lib/jwt/algos/ecdsa.rb#L13
+        digest = OpenSSL::Digest.new('sha256')
+        signature = key.dsa_sign_asn1(digest.digest(headerAndPlayload))
+        signedSignature = ReceiptObjectAnalyzer.asn1_to_raw signature, key
+        params << ReceiptObjectAnalyzer.encode64(signedSignature)
+        "#{params.join(".")}"
     end
 
     def self.requestReceipt(lastReceipt, challenge, mode)
         jwt = ReceiptObjectAnalyzer.getJWT()
-        url = mode == :production ? 
-            Constants::APPLE_URL_PRDUCTION :
-            Constants::APPLE_URL_DEVLOPMENT
+        uri = mode == :production ? 
+            URI(Constants::APPLE_URL_PRDUCTION) :
+            URI(Constants::APPLE_URL_DEVLOPMENT)
 
         unless lastReceipt
             mask = "#{challenge}_Receipt_*"
@@ -134,19 +169,26 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         lastReceipt = Base64.encode64(lastReceipt)
 
         receipt = nil
-        http.request_post(url, lastReceipt, {
-            Authorization: jwt
-        }) { |response|
-            if response.status == 200
-                response.read_body do |new_receipt|
-                    pp new_receipt
-                    receipt = Base64.decode64(new_receipt)
-                    ReceiptObjectAnalyzer.save!(challenge, receipt, files.count + 1)
-                end
-            else
-                raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[response.status.to_s] || ''}"
-            end
-        }    
+        Net::HTTP.start(
+            uri.host,
+            uri.port,
+            :use_ssl => uri.scheme == 'https') do |http|
+            http.request_post(uri.path, lastReceipt, {
+                Authorization: "bearer #{jwt}"
+            }) { |response|
+                p response
+                # if response.status == 200
+                #     response.read_body do |new_receipt|
+                #         pp new_receipt
+                #         receipt = Base64.decode64(new_receipt)
+                #         ReceiptObjectAnalyzer.save!(challenge, receipt, files.count + 1)
+                #     end
+                # else
+                #     pp response.status
+                #     raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[response.status.to_s] || ''}"
+                # end
+            }    
+        end
         return receipt
     end
 

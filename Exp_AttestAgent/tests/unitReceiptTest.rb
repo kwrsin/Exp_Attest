@@ -16,7 +16,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     # end
 
     # def test_verify!
-    #     appId = ENV['ATTEST_APPID'] || ''
+    #     appId = ENV['ATTEST_APPID']
     #     keyName = "test_Attested"
     #     lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
     #         challenge: keyName,
@@ -29,9 +29,32 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     #     receiptObject.verify!
     # end
 
-    def test_env
-        puts ENV['ATTEST_APPID']
-        puts ENV['P8_PATH']
-        puts ENV['TEAM_ID']
+    def test_jwt
+        require 'jwt'
+       jwt = ReceiptObjectAnalyzer.getJWT
+       p jwt
+       decoded_token = JWT.decode jwt, nil, false
+       p decoded_token
+        # payload = { iss: ENV['TEAM_ID'] }
+    #    key = OpenSSL::PKey::EC.new(
+    #     File.read(
+    #         File.join(Constants::STORE_PATH, ENV['P8_PATH'])))
+    #     token = JWT.encode payload, key, 'ES256'
+    #     p "bearer #{token}"
     end
+
+    # def test_requestReceipt
+    #     appId = ENV['ATTEST_APPID']
+    #     keyName = "test_Attested"
+    #     lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+    #         challenge: keyName,
+    #         path: Constants::STORE_PATH,
+    #     })
+    #     receipt = lastReceipt.prop(:receipt)
+    #     challenge = lastReceipt.prop(:challenge)
+        
+    #     ReceiptObjectAnalyzer.requestReceipt(receipt, challenge, :development)
+
+        
+    # end
 end

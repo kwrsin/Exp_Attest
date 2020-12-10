@@ -8,4 +8,7 @@ gem "sinatra"
 gem "sinatra-contrib"
 gem "cbor"
 
-gem 'test-unit'
+group :test, :development do
+    gem 'test-unit'
+    gem 'jwt'
+end
