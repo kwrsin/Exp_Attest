@@ -13,7 +13,7 @@ class ChallengeFactory
 
     def path(dumpPath = nil)
         if dumpPath
-            ChallengeFactory.setDumpPath path
+            ChallengeFactory.setDumpPath dumpPath
         end
     end
 
