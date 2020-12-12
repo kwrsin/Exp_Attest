@@ -1,6 +1,7 @@
 require 'test/unit'
 require './strageManager'
 require './receiptObjectAnalyzer'
+require 'jwt'
 
 class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     def setup
@@ -30,17 +31,17 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     # end
 
     # def test_jwt
-    #     require 'jwt'
-    #    jwt = ReceiptObjectAnalyzer.getJWT2
-    #    p jwt
-    #    decoded_token = JWT.decode jwt, nil, false
-    #    p decoded_token
-    #     # payload = { iss: ENV['TEAM_ID'] }
-    # #    key = OpenSSL::PKey::EC.new(
-    # #     File.read(
-    # #         File.join(Constants::STORE_PATH, ENV['P8_PATH'])))
-    # #     token = JWT.encode payload, key, 'ES256'
-    # #     p "bearer #{token}"
+    #     # jwt = "eyJraWQiOiJaQVgzQThHRDJSIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiIyNk5YRTQ3SE4yIiwiaWF0IjoxNjA3NzY0NTE3fQ.QD_Hk2_0RM_dKmVayC8u5Py6uH8OJIgstd-r0DWu5LvL4R3rU1-l_H39wBfsKd97ICa-63WwALsohjUukee3hA"
+    #     jwt = ReceiptObjectAnalyzer.getJWT
+    #     begin
+    #         key = OpenSSL::PKey::EC.new(
+    #         File.read(
+    #         File.join(Constants::STORE_PATH, ENV['P8_PATH'])))
+    #         decoded_token = JWT.decode jwt, key, true, {algorithm: 'ES256'}
+    #         p decoded_token
+    #     rescue
+    #         puts 'error========================>'
+    #     end   
     # end
 
     def test_requestReceipt
