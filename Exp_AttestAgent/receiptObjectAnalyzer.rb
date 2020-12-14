@@ -4,7 +4,6 @@ require 'net/http'
 require 'cbor'
 require 'time'
 require 'json'
-require 'jwt'
 
 require './constants'
 require './strageManager'
@@ -69,13 +68,14 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         #STEP6
         raise 'the public key is invalid' unless isValidPublicKey?
         
-        # TODO: Metrics checking
-        # raise 'Bad Metrics' unless isValidMetrics?
+        # Interpret the Metric
+        return getMetric
     end
 
-    # def isValidMetrics?
-        # return METRIC_PASS if field(FIELD_RECEIPT_TYPE) == :ATTEST.to_s
-    # end
+    def getMetric
+        return field(FIELD_RISK_METRIC).to_i if(field(FIELD_RECEIPT_TYPE).to_sym == :RECEIPT)
+        return -1
+    end
 
     def isValidPublicKey?
         cert = OpenSSL::X509::Certificate.new field(FIELD_ATTEST_PUBLIC_KEY)
@@ -120,29 +120,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         Base64.encode64(str).tr('+/', '-_').gsub(/[\n=]/, '')
     end
 
-    def self.getJWT2
-        # REF: https://shashikantjagtap.net/generating-jwt-tokens-for-app-store-connect-api/
-        # private_key = OpenSSL::PKey.read(
-        #     File.read(
-        #         File.join(Constants::STORE_PATH, ENV['P8_PATH'])))
-        private_key = OpenSSL::PKey::EC.new(
-            File.read(
-                File.join(Constants::STORE_PATH, ENV['P8_PATH'])))
- 
-        token = JWT.encode({
-                iss: ENV['TEAM_ID'],
-                iat: Time.now.to_i
-            },
-            private_key,
-            "ES256",
-            header_fields = {
-                kid: ENV['JWT_KEY_ID']
-            }
-        )
-        token
-    end
-
-     def self.getJWT
+    def self.getJWT
         # REF: https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns#2947602
         keyId = ENV['JWT_KEY_ID']
         teamId = ENV['TEAM_ID']
@@ -172,7 +150,6 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
 
     def self.requestReceipt(lastReceipt, challenge, mode)
         jwt = ReceiptObjectAnalyzer.getJWT()
-        # jwt = "eyJraWQiOiJaQVgzQThHRDJSIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiIyNk5YRTQ3SE4yIiwiaWF0IjoxNjA3NzY0NTE3fQ.QD_Hk2_0RM_dKmVayC8u5Py6uH8OJIgstd-r0DWu5LvL4R3rU1-l_H39wBfsKd97ICa-63WwALsohjUukee3hA"
         uri = mode == :production ? 
             URI(Constants::APPLE_URL_PRDUCTION) :
             URI(Constants::APPLE_URL_DEVLOPMENT)
@@ -189,7 +166,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             })
             raise "could not get last receipt." unless lastReceipt
         end
-        
+
         # !!Must Use Strict encoding
         base64Receipt = Base64.strict_encode64(lastReceipt)
         receipt = nil
@@ -200,39 +177,17 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         res = Net::HTTP.start(uri.host, uri.port, :use_ssl => true) do |http|
             http.request(req)
         end
-        p res
-        p res.code
-        p res.read_body
 
-        # File.write('../store/receipt.bin', lastReceipt)
+        if res.code == 200
+            res.read_body do |new_receipt|
+                pp new_receipt
+                receipt = Base64.decode64(new_receipt)
+                ReceiptObjectAnalyzer.save!(challenge, receipt, files.count + 1)
+            end
+        else
+            raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[response.status.to_s] || ''}"
+        end
 
-        # Net::HTTP.start(
-        #     uri.host,
-        #     uri.port,
-        #     :use_ssl => true) do |http|
-        #     res = http.post(uri.path, base64Receipt, {
-        #         Authorization: "Bearer #{jwt}",
-        #         # "Authorization": "#{jwt}",
-        #         # "Content-Type": "application/octet-stream"
-        #     })
-            
-        #     # { |response|
-        #     #     p response
-        #     #     # if response.status == 200
-        #     #     #     response.read_body do |new_receipt|
-        #     #     #         pp new_receipt
-        #     #     #         receipt = Base64.decode64(new_receipt)
-        #     #     #         ReceiptObjectAnalyzer.save!(challenge, receipt, files.count + 1)
-        #     #     #     end
-        #     #     # else
-        #     #     #     pp response.status
-        #     #     #     raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[response.status.to_s] || ''}"
-        #     #     # end
-        #     # }
-            
-        #     pp res
-        #     pp res.read_body
-        # end
         return receipt
     end
 
