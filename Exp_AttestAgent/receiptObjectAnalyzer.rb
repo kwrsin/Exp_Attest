@@ -38,7 +38,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     FIELD_NOT_BEFORE = 19
     FIELD_EXPIRERATION_TIME = 21
 
-    METRIC_PASS = -1
+    NO_METRIC = -1
 
     def field(field)
         field = @fields.find do |v|
@@ -74,7 +74,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
 
     def getMetric
         return field(FIELD_RISK_METRIC).to_i if(field(FIELD_RECEIPT_TYPE).to_sym == :RECEIPT)
-        return -1
+        return NO_METRIC
     end
 
     def isValidPublicKey?
@@ -158,13 +158,13 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             mask = "#{challenge}_Receipt_*"
             files = Dir.glob(File.join(Constants::STORE_PATH, mask))
             keyName = files.sort.last || ""
-            raise "could not find last receipt." if keyName.empty?
+            raise "could not find a last receipt." if keyName.empty?
             
             lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
                 challenge: keyName,
                 path: Constants::STORE_PATH,
             })
-            raise "could not get last receipt." unless lastReceipt
+            raise "could not get a last receipt." unless lastReceipt
         end
 
         # !!Must Use Strict encoding
@@ -180,12 +180,11 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
 
         if res.code == 200
             res.read_body do |new_receipt|
-                pp new_receipt
                 receipt = Base64.decode64(new_receipt)
                 ReceiptObjectAnalyzer.save!(challenge, receipt, files.count + 1)
             end
         else
-            raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[response.status.to_s] || ''}"
+            raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[res.code.to_s] || ''}"
         end
 
         return receipt
