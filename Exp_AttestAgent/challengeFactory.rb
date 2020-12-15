@@ -1,5 +1,6 @@
 require 'singleton'
 
+require './constants'
 require './tools'
 
 class ChallengeFactory

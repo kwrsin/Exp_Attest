@@ -67,7 +67,7 @@ class AttestationObjectAnalyzer
         raise 'key is invalid!!' unless isValidKeyId?
 
         # STEP6
-        raise 'RrId is invalid!!' unless isValidRrId?
+        raise 'RpId is invalid!!' unless isValidRpId?
 
         # STEP7
         raise 'Counter is not zero!!' unless isZeroCounter?
@@ -163,7 +163,7 @@ class AttestationObjectAnalyzer
         return pub_key == @keyId
     end
 
-    def isValidRrId?
+    def isValidRpId?
         hashedAppId = toDigest @appId
         hashedRpId = @rp_id_hash
         return hashedAppId == hashedRpId

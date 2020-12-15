@@ -153,13 +153,9 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         uri = mode == :production ? 
             URI(Constants::APPLE_URL_PRDUCTION) :
             URI(Constants::APPLE_URL_DEVLOPMENT)
+        keyName = "#{challenge}_Receipt_*"
 
         unless lastReceipt
-            mask = "#{challenge}_Receipt_*"
-            files = Dir.glob(File.join(Constants::STORE_PATH, mask))
-            keyName = files.sort.last || ""
-            raise "could not find a last receipt." if keyName.empty?
-            
             lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
                 challenge: keyName,
                 path: Constants::STORE_PATH,
@@ -181,7 +177,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         if res.code == 200
             res.read_body do |new_receipt|
                 receipt = Base64.decode64(new_receipt)
-                ReceiptObjectAnalyzer.save!(challenge, receipt, files.count + 1)
+                ReceiptObjectAnalyzer.append!(challenge, receipt)
             end
         else
             raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[res.code.to_s] || ''}"
@@ -190,11 +186,11 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         return receipt
     end
 
-    def self.save!(challenge, receipt, count = 0)
+    def self.append!(challenge, receipt)
         StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-            challenge: "#{challenge}_Receipt_#{count.to_s.rjust(Constants::COLUMN_WIDTH, '0')}",
+            challenge: keyName,
             path: Constants::STORE_PATH,
             records: receipt
-        }).save!
+        }).append!
     end
 end

@@ -104,6 +104,7 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
             StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
                 challenge: "#{@parsedClientData["challenge"]}_*",
                 path: Constants::STORE_PATH,
+                records: {},
             }).remove!
             return true
         end
