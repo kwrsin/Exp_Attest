@@ -54,9 +54,8 @@ post '/attestation/:uuid' do
     begin
         uuid = params[:uuid]
         settings.cf.set(uuid, params)
-        appId = ENV['ATTEST_APPID']
         
-        analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
+        analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, ENV['ATTEST_APPID'])
         result = Constants::RESPONSE_SUCCESS if analyzer.saveAttestedObject!
     rescue => error
         logger.error error.message
@@ -68,9 +67,7 @@ end
 post '/assertion' do
     result = Constants::RESPONSE_FAULT
     begin
-        appId = ENV['ATTEST_APPID']
-
-        analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], appId)
+        analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], ENV['ATTEST_APPID'])
         result = RequestProcessor::Processor.instance().process(analyzer.validatedRequest)
     rescue => error
         logger.error error.message
@@ -82,9 +79,7 @@ end
 delete '/checked' do
     result = Constants::RESPONSE_FAULT
     begin
-        appId = ENV['ATTEST_APPID']
-
-        analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], appId)
+        analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], ENV['ATTEST_APPID'])
         result = Constants::RESPONSE_SUCCESS if analyzer.delete!
     rescue => error
         logger.error error.message
