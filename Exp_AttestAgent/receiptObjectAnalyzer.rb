@@ -38,8 +38,6 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     FIELD_NOT_BEFORE = 19
     FIELD_EXPIRERATION_TIME = 21
 
-    NO_METRIC = -1
-
     def field(field)
         field = @fields.find do |v|
             v.value[0].value == field
@@ -74,7 +72,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
 
     def getMetric
         return field(FIELD_RISK_METRIC).to_i if(field(FIELD_RECEIPT_TYPE).to_sym == :RECEIPT)
-        return NO_METRIC
+        return Constants::NO_METRIC
     end
 
     def isValidPublicKey?
@@ -173,12 +171,10 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         res = Net::HTTP.start(uri.host, uri.port, :use_ssl => true) do |http|
             http.request(req)
         end
-
-        if res.code == 200
-            res.read_body do |new_receipt|
-                receipt = Base64.decode64(new_receipt)
-                ReceiptObjectAnalyzer.append!(challenge, receipt)
-            end
+        
+        if res.code.to_i == 200
+            receipt = Base64.decode64(res.read_body)
+            ReceiptObjectAnalyzer.append!(keyName, receipt)
         else
             raise "response status error. #{ReceiptStatus::RESPONSE_STATUS[res.code.to_s] || ''}"
         end
@@ -186,7 +182,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         return receipt
     end
 
-    def self.append!(challenge, receipt)
+    def self.append!(keyName, receipt)
         StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
             challenge: keyName,
             path: Constants::STORE_PATH,

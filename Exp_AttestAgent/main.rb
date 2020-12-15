@@ -10,6 +10,7 @@ require './constants'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
 require './assertionObjectAnalyzer'
+require './receiptObjectAnalyzer'
 require './requestProcessor'
 
 set :bind, '0.0.0.0'
@@ -54,9 +55,10 @@ post '/attestation/:uuid' do
     begin
         uuid = params[:uuid]
         settings.cf.set(uuid, params)
-        
-        analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, ENV['ATTEST_APPID'])
-        result = Constants::RESPONSE_SUCCESS if analyzer.saveAttestedObject!
+        appId = ENV['ATTEST_APPID']
+        analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
+        attestedObject = analyzer.saveAttestedObject!
+        result = Constants::RESPONSE_SUCCESS if requestMetric!(attestedObject, appId) > 0
     rescue => error
         logger.error error.message
     end
@@ -87,3 +89,24 @@ delete '/checked' do
 
     json :result => result
 end
+
+def requestMetric!(attestedObject, appId)
+    receipt = attestedObject[:receipt]
+    challenge = attestedObject[:challenge]
+    cert = attestedObject[:intermidiate_cartification]
+    raise 'could not save a Attested Object' unless attestedObject
+    deviceReceiptAnalyzer = ReceiptObjectAnalyzer.new(
+        receipt, challenge, cert, appId)
+
+    raise 'invalid device receipt' unless deviceReceiptAnalyzer.verify! == Constants::NO_METRIC
+    metricReceipt = ReceiptObjectAnalyzer.requestReceipt(
+        receipt, challenge, attestedObject[:mode])
+    metricReceiptAnalyzer = ReceiptObjectAnalyzer.new(
+        metricReceipt, challenge, cert, appId)
+        
+    metric = metricReceiptAnalyzer.verify!
+    raise 'invalid metric receipt' unless metric > 0
+    metric
+end
+
+

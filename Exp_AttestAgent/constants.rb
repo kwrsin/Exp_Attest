@@ -9,4 +9,5 @@ module Constants
 
     STRAGE_TYPE = :file
     COLUMN_WIDTH = 7
+    NO_METRIC = -1
 end

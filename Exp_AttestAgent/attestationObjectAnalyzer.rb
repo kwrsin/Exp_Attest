@@ -99,7 +99,7 @@ class AttestationObjectAnalyzer
             path: Constants::STORE_PATH,
             records: records
         }).save!
-        return true if result
+        return result
         raise 'persistent fault!!'
     end
 

@@ -44,38 +44,38 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     #     end   
     # end
 
-    # def test_requestReceipt
-    #     keyName = "test_Attested"
-    #     lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-    #         challenge: keyName,
-    #         path: Constants::STORE_PATH,
-    #     })
-    #     receipt = lastReceipt.prop(:receipt)
-    #     challenge = lastReceipt.prop(:challenge)
-        
-    #     ReceiptObjectAnalyzer.requestReceipt(receipt, challenge, :development)
-    # end
-
-
-    def test_analyze_returned_receipt
-        receiptBase64 = File.read(
-            File.join(Constants::STORE_PATH, "returnNewReceipt.txt")
-        )
-        
-        receipt = Base64.decode64 receiptBase64
-
-        appId = ENV['ATTEST_APPID']
+    def test_requestReceipt
         keyName = "test_Attested"
         lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
             challenge: keyName,
             path: Constants::STORE_PATH,
         })
+        receipt = lastReceipt.prop(:receipt)
         challenge = lastReceipt.prop(:challenge)
-        cert = lastReceipt.prop(:intermidiate_cartification)
-        receiptObject = ReceiptObjectAnalyzer.new(receipt, challenge, cert, appId)
-        assert_raise do
-            receiptObject.verify!
-        end
-
+        
+        ReceiptObjectAnalyzer.requestReceipt(receipt, challenge, :development)
     end
+
+
+    # def test_analyze_returned_receipt
+    #     receiptBase64 = File.read(
+    #         File.join(Constants::STORE_PATH, "returnNewReceipt.txt")
+    #     )
+        
+    #     receipt = Base64.decode64 receiptBase64
+
+    #     appId = ENV['ATTEST_APPID']
+    #     keyName = "test_Attested"
+    #     lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+    #         challenge: keyName,
+    #         path: Constants::STORE_PATH,
+    #     })
+    #     challenge = lastReceipt.prop(:challenge)
+    #     cert = lastReceipt.prop(:intermidiate_cartification)
+    #     receiptObject = ReceiptObjectAnalyzer.new(receipt, challenge, cert, appId)
+    #     assert_raise do
+    #         receiptObject.verify!
+    #     end
+
+    # end
 end
