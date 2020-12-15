@@ -1,11 +1,12 @@
 require 'singleton'
+require './constants'
 require './tools'
 
 module StrageManager
     class Strage
         include Singleton
 
-        def getStrage(strageType = :file, options = nil)
+        def getStrage(strageType = Constants::STRAGE_TYPE, options = nil)
             case strageType
             when :db
                 return StrageHelpers::DBStrage.new(options)
@@ -39,9 +40,17 @@ module StrageManager
                 raise "load! is Not Implemented!!"
             end
 
+            def lastRecord!
+                raise "lastRecord! is Not Implemented!!"
+            end
+
             public
             def save!(diff)
                 raise "save! is Not Implemented!!"
+            end
+            
+            def append!(diff)
+                raise "append! is Not Implemented!!"
             end
             
             def update!
@@ -59,19 +68,35 @@ module StrageManager
             def prop(key)
                 @records[key]
             end
+
+            def getMode!
+                raise "getMode! is Not Implemented!!"
+            end
+
         end
 
         class FileStrage < BaseStrage
-            @strageName = :File
+            @strageName = :FILE
 
             def load!
-                @records = Marshal.load(File.read(@path)) if FileTest.exists? @path
+                filename = lastRecord!
+                filepath = File.join(@options[:path], filename)
+                @records = Marshal.load(File.read(filepath)) if FileTest.exist? filepath
                 @records ||= {}
             end
 
             def save!(diff = nil)
-                raise "could not save @path." if FileTest.exists? @path
+                raise "could not save #{@path}." if FileTest.exist? @path
                 update!(diff)     
+            end
+            
+            def append!(diff = nil)
+                count = Dir.glob(@path).count
+                count += 1
+                filename = "#{@options[:challenge]}"
+                                .sub('_*', "_#{count.to_s.rjust(Constants::COLUMN_WIDTH, '0')}")
+                @path = File.join(@options[:path], filename)
+                save!(diff)
             end
             
             def update!(diff = nil)
@@ -82,8 +107,20 @@ module StrageManager
             end
 
             def remove!
-                deleteFiles(@path)
+                deleteFiles(@path) if Dir.glob(@path).count > 0
             end
+
+            def getMode!
+                raise "getMode! is Not Implemented!!"
+            end
+
+            def lastRecord!
+                files = Dir.glob(@path)
+                filename = files.sort.last || ""
+                raise "could not find a last file." if filename.empty?
+                filename
+            end
+
         end
 
         class DBStrage < BaseStrage

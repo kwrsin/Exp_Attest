@@ -1,19 +1,20 @@
 require 'singleton'
 
+require './constants'
 require './tools'
 
 class ChallengeFactory
-    @@path = '../store'
     include Singleton
+    @@path = Constants::STORE_PATH
 
-    def setting(setter = nil)
-        setter(self) if setter
+    def setting
+        yield(self) if block_given?
         self
     end
 
     def path(dumpPath = nil)
         if dumpPath
-            ChallengeFactory.setDumpPath path
+            ChallengeFactory.setDumpPath dumpPath
         end
     end
 

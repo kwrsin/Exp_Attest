@@ -8,4 +8,13 @@ gem "sinatra"
 gem "sinatra-contrib"
 gem "cbor"
 
-gem 'test-unit'
+group :development do
+  gem 'guard'
+  gem 'guard-shell'
+end
+
+group :test do
+    gem 'test-unit'
+    gem 'jwt'
+    gem 'rake'
+end

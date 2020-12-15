@@ -18,23 +18,8 @@ class AttestationObjectAnalyzer
         @appId = appId
         @challenge = challenge
         @cb = CBOR.decode(@attestationObject)
-        # ca_pem = Net::HTTP.get(URI('https://www.apple.com/certificateauthority/Apple_App_Attestation_Root_CA.pem'))
-        ca_pem = <<~PEM
------BEGIN CERTIFICATE-----
-MIICITCCAaegAwIBAgIQC/O+DvHN0uD7jG5yH2IXmDAKBggqhkjOPQQDAzBSMSYw
-JAYDVQQDDB1BcHBsZSBBcHAgQXR0ZXN0YXRpb24gUm9vdCBDQTETMBEGA1UECgwK
-QXBwbGUgSW5jLjETMBEGA1UECAwKQ2FsaWZvcm5pYTAeFw0yMDAzMTgxODMyNTNa
-Fw00NTAzMTUwMDAwMDBaMFIxJjAkBgNVBAMMHUFwcGxlIEFwcCBBdHRlc3RhdGlv
-biBSb290IENBMRMwEQYDVQQKDApBcHBsZSBJbmMuMRMwEQYDVQQIDApDYWxpZm9y
-bmlhMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAERTHhmLW07ATaFQIEVwTtT4dyctdh
-NbJhFs/Ii2FdCgAHGbpphY3+d8qjuDngIN3WVhQUBHAoMeQ/cLiP1sOUtgjqK9au
-Yen1mMEvRq9Sk3Jm5X8U62H+xTD3FE9TgS41o0IwQDAPBgNVHRMBAf8EBTADAQH/
-MB0GA1UdDgQWBBSskRBTM72+aEH/pwyp5frq5eWKoTAOBgNVHQ8BAf8EBAMCAQYw
-CgYIKoZIzj0EAwMDaAAwZQIwQgFGnByvsiVbpTKwSga0kP0e8EeDS4+sQmTvb7vn
-53O5+FRXgeLhpJ06ysC5PrOyAjEAp5U4xDgEgllF7En3VcE3iexZZtKeYnpqtijV
-oyFraWVIyd/dganmrduC1bmTBGwD
------END CERTIFICATE-----
-PEM
+        ca_pem = getCAPem
+
         @ca_cartification = 
             OpenSSL::X509::Certificate.new(ca_pem)
         @intermidiate_cartification =
@@ -76,23 +61,23 @@ PEM
         nonce = getNonceFromAuthData(h)
 
         # STEP4
-        raise 'nonce is NOT same!!' if !isSameNonce?(nonce)
+        raise 'nonce is NOT same!!' unless isSameNonce?(nonce)
 
         # STEP5
-        raise 'key is invalid!!' if !isValidKeyId?
+        raise 'key is invalid!!' unless isValidKeyId?
 
         # STEP6
-        raise 'RrId is invalid!!' if !isValidRrId?
+        raise 'RpId is invalid!!' unless isValidRpId?
 
         # STEP7
-        raise 'Counter is not zero!!' if !isZeroCounter?
+        raise 'Counter is not zero!!' unless isZeroCounter?
 
         # STEP8
         mode = :production
         mode = :development if isDevelopping?
 
         # STEP9
-        raise 'CredentialId is invalid!!' if !isValidCredentialId?
+        raise 'CredentialId is invalid!!' unless isValidCredentialId?
 
         return mode
     end
@@ -109,17 +94,16 @@ PEM
             mode: mode,
             challenge_create_at: @cb['create_at'],
         }
-        result = StrageManager::Strage.instance().getStrage(:file, {
+        result = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
             challenge: "#{@challenge}_Attested",
             path: Constants::STORE_PATH,
             records: records
         }).save!
-        return true if result
+        return result
         raise 'persistent fault!!'
     end
 
     private
-
     def isValidChains?
         # REF: https://my.diffend.io/gems/web_authn/0.4.1/0.5.0#d2h-883949
         store = OpenSSL::X509::Store.new
@@ -179,7 +163,7 @@ PEM
         return pub_key == @keyId
     end
 
-    def isValidRrId?
+    def isValidRpId?
         hashedAppId = toDigest @appId
         hashedRpId = @rp_id_hash
         return hashedAppId == hashedRpId
@@ -203,4 +187,39 @@ PEM
         return @credential_id == @keyId
     end
 
+    protected
+    def getCAPem
+        # ca_pem = Net::HTTP.get(URI('https://www.apple.com/certificateauthority/Apple_App_Attestation_Root_CA.pem'))
+        ca_pem = <<~PEM
+-----BEGIN CERTIFICATE-----
+MIICITCCAaegAwIBAgIQC/O+DvHN0uD7jG5yH2IXmDAKBggqhkjOPQQDAzBSMSYw
+JAYDVQQDDB1BcHBsZSBBcHAgQXR0ZXN0YXRpb24gUm9vdCBDQTETMBEGA1UECgwK
+QXBwbGUgSW5jLjETMBEGA1UECAwKQ2FsaWZvcm5pYTAeFw0yMDAzMTgxODMyNTNa
+Fw00NTAzMTUwMDAwMDBaMFIxJjAkBgNVBAMMHUFwcGxlIEFwcCBBdHRlc3RhdGlv
+biBSb290IENBMRMwEQYDVQQKDApBcHBsZSBJbmMuMRMwEQYDVQQIDApDYWxpZm9y
+bmlhMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAERTHhmLW07ATaFQIEVwTtT4dyctdh
+NbJhFs/Ii2FdCgAHGbpphY3+d8qjuDngIN3WVhQUBHAoMeQ/cLiP1sOUtgjqK9au
+Yen1mMEvRq9Sk3Jm5X8U62H+xTD3FE9TgS41o0IwQDAPBgNVHRMBAf8EBTADAQH/
+MB0GA1UdDgQWBBSskRBTM72+aEH/pwyp5frq5eWKoTAOBgNVHQ8BAf8EBAMCAQYw
+CgYIKoZIzj0EAwMDaAAwZQIwQgFGnByvsiVbpTKwSga0kP0e8EeDS4+sQmTvb7vn
+53O5+FRXgeLhpJ06ysC5PrOyAjEAp5U4xDgEgllF7En3VcE3iexZZtKeYnpqtijV
+oyFraWVIyd/dganmrduC1bmTBGwD
+-----END CERTIFICATE-----
+PEM
+        ca_pem
+    end
+
+    # def self.convertPublicKey(certification)
+    #     return nil if certification.to_s.empty?
+        
+    #     public_key = certification.public_key.to_der
+    #     asn1 = OpenSSL::ASN1.decode(public_key) 
+    #     pub_key = nil 
+    #     asn1.value.each {|v|
+    #         if v.tag == 3 
+    #             pub_key = v.value
+    #         end
+    #     }
+    #     pub_key
+    # end
 end

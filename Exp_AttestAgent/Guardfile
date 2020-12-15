@@ -1,0 +1,4 @@
+guard :shell do
+    watch(%r{(.*).rb}) { `rake test` }
+    # watch(%r{tests/(.*).rb}) { `rake test` }
+end

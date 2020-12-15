@@ -8,5 +8,6 @@ services:
         volumes:
             - .:/code
             - ./store:/store
-        environment:
-            ATTEST_APPID: "XXXXXXXXXX.io.github.kwrsin.Exp-Attest"
+        env_file:
+            - ./store/web_variables.env
+

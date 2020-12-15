@@ -27,9 +27,9 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
             auth_data.byteslice(33...37),
             # auth_data.byteslice(33...-1)
         ]
-        @filename = "#{@parsedClientData["challenge"]}_Attested"
-        @records = StrageManager::Strage.instance().getStrage(:file, {
-            challenge: @filename,
+        @keyName = "#{@parsedClientData["challenge"]}_Attested"
+        @records = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+            challenge: @keyName,
             path: Constants::STORE_PATH
         }).load!
         @keyId = @records[:keyId]
@@ -88,8 +88,8 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         counter = verify!
         if counter > 0
             @records[:counter] = counter
-            StrageManager::Strage.instance().getStrage(:file, {
-                challenge: @filename,
+            StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+                challenge: @keyName,
                 path: Constants::STORE_PATH,
             }).update!({
                 counter: counter,
@@ -101,9 +101,10 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
 
     def delete!
         if updateCounter!
-            StrageManager::Strage.instance().getStrage(:file, {
+            StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
                 challenge: "#{@parsedClientData["challenge"]}_*",
                 path: Constants::STORE_PATH,
+                records: {},
             }).remove!
             return true
         end

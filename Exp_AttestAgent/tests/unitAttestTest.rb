@@ -49,7 +49,7 @@ class TC_Attest < Test::Unit::TestCase
             path: @path,
             records: records
         }
-        strage = StrageManager::Strage.instance().getStrage(:file, options)
+        strage = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, options)
         strage.save!
 
     end
