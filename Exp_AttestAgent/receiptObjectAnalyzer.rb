@@ -153,13 +153,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             URI(Constants::APPLE_URL_DEVLOPMENT)
         keyName = "#{challenge}_Receipt_*"
 
-        unless lastReceipt
-            lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-                challenge: keyName,
-                path: Constants::STORE_PATH,
-            })
-            raise "could not get a last receipt." unless lastReceipt
-        end
+        raise "could not get a last receipt." unless lastReceipt
 
         # !!Must Use Strict encoding
         base64Receipt = Base64.strict_encode64(lastReceipt)

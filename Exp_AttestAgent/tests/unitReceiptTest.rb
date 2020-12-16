@@ -53,7 +53,8 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
         receipt = lastReceipt.prop(:receipt)
         challenge = lastReceipt.prop(:challenge)
         
-        ReceiptObjectAnalyzer.exchangeReceipt(receipt, challenge, :development)
+        rc = ReceiptObjectAnalyzer.exchangeReceipt(receipt, challenge, :development)
+        # File.write(File.join(Constants::STORE_PATH, 'receipt.bin2'), rc) if rc
     end
 
 
