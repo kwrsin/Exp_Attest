@@ -20,11 +20,11 @@ class AttestationObjectAnalyzer
         @cb = CBOR.decode(@attestationObject)
         ca_pem = getCAPem
 
-        @ca_cartification = 
+        @ca_certification = 
             OpenSSL::X509::Certificate.new(ca_pem)
-        @intermidiate_cartification =
+        @intermidiate_certification =
             OpenSSL::X509::Certificate.new(@cb['attStmt']['x5c'][0])
-        @leaf_cartification =
+        @leaf_certification =
             OpenSSL::X509::Certificate.new(@cb['attStmt']['x5c'][1])
 
         # REF: https://www.w3.org/TR/webauthn/#fig-attStructs
@@ -87,8 +87,8 @@ class AttestationObjectAnalyzer
         records =  {
             challenge: @challenge,
             keyId: @keyId,
-            intermidiate_cartification: @cb['attStmt']['x5c'][0],
-            leaf_cartification: @cb['attStmt']['x5c'][1],
+            intermidiate_certification: @cb['attStmt']['x5c'][0],
+            leaf_certification: @cb['attStmt']['x5c'][1],
             receipt: @cb['attStmt']['receipt'],
             counter: 0,
             mode: mode,
@@ -107,12 +107,12 @@ class AttestationObjectAnalyzer
     def isValidChains?
         # REF: https://my.diffend.io/gems/web_authn/0.4.1/0.5.0#d2h-883949
         store = OpenSSL::X509::Store.new
-        store.add_cert @ca_cartification
-        return store.verify(@intermidiate_cartification, [@leaf_cartification])
+        store.add_cert @ca_certification
+        return store.verify(@intermidiate_certification, [@leaf_certification])
         
         # another workaround??
-        # if @intermidiate_cartification.verify(@leaf_cartification.public_key)
-        #     if @leaf_cartification.verify(@ca_cartification.public_key)
+        # if @intermidiate_certification.verify(@leaf_certification.public_key)
+        #     if @leaf_certification.verify(@ca_certification.public_key)
         #         return true
         #     end
         # end
@@ -137,7 +137,7 @@ class AttestationObjectAnalyzer
     def isSameNonce?(nonce)
         # REF: see isValidChains?'s REF.
         return false if nonce.to_s.empty?
-        extension = @intermidiate_cartification
+        extension = @intermidiate_certification
             .extensions.detect { |ext|
                 ext.oid == APPLE_OID }
         expected_nonce = OpenSSL::ASN1.decode(
@@ -151,7 +151,7 @@ class AttestationObjectAnalyzer
         # REF: https://github.com/ruby/openssl/issues/163#issuecomment-339108949
         return false if @keyId.to_s.empty?
         
-        public_key = @intermidiate_cartification.public_key.to_der
+        public_key = @intermidiate_certification.public_key.to_der
         asn1 = OpenSSL::ASN1.decode(public_key) 
         pub_key = nil 
         asn1.value.each {|v|

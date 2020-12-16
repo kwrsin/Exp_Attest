@@ -20,10 +20,10 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
 
         # REF: https://developer.apple.com/documentation/devicecheck/assessing_fraud_risk
         ca_pem = File.read(Constants::ATTEST_APPLE_ROOT_CA_PATH)
-        @ca_cartification = 
+        @ca_certification = 
             OpenSSL::X509::Certificate.new(ca_pem)
-        @intermidiate_cartification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[1])
-        @leaf_cartification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[2])
+        @intermidiate_certification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[1])
+        @leaf_certification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[2])
         @attestedPK = OpenSSL::X509::Certificate.new(cert).public_key
 
     end
@@ -91,7 +91,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
 
     def isValidSignature?
         store = OpenSSL::X509::Store.new
-        store.add_cert @ca_cartification
+        store.add_cert @ca_certification
         @pkcs7.verify(nil, store)
     end
 
@@ -146,7 +146,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         "#{params.join('.')}"
     end
 
-    def self.requestReceipt(lastReceipt, challenge, mode)
+    def self.exchangeReceipt(lastReceipt, challenge, mode)
         jwt = ReceiptObjectAnalyzer.getJWT()
         uri = mode == :production ? 
             URI(Constants::APPLE_URL_PRDUCTION) :

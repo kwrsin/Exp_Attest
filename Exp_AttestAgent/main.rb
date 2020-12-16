@@ -93,13 +93,13 @@ end
 def requestMetric!(attestedObject, appId)
     receipt = attestedObject[:receipt]
     challenge = attestedObject[:challenge]
-    cert = attestedObject[:intermidiate_cartification]
+    cert = attestedObject[:intermidiate_certification]
     raise 'could not save a Attested Object' unless attestedObject
     deviceReceiptAnalyzer = ReceiptObjectAnalyzer.new(
         receipt, challenge, cert, appId)
 
     raise 'invalid device receipt' unless deviceReceiptAnalyzer.verify! == Constants::NO_METRIC
-    metricReceipt = ReceiptObjectAnalyzer.requestReceipt(
+    metricReceipt = ReceiptObjectAnalyzer.exchangeReceipt(
         receipt, challenge, attestedObject[:mode])
     metricReceiptAnalyzer = ReceiptObjectAnalyzer.new(
         metricReceipt, challenge, cert, appId)

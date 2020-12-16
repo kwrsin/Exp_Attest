@@ -33,8 +33,8 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
             path: Constants::STORE_PATH
         }).load!
         @keyId = @records[:keyId]
-        @intermidiate_cartification =
-            OpenSSL::X509::Certificate.new(@records[:intermidiate_cartification])
+        @intermidiate_certification =
+            OpenSSL::X509::Certificate.new(@records[:intermidiate_certification])
     end
 
     public
@@ -62,7 +62,7 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
     end
 
     def validSignature?(nonce)
-        return true if @intermidiate_cartification.public_key.verify(
+        return true if @intermidiate_certification.public_key.verify(
             OpenSSL::Digest::SHA256.new, @signature, nonce)
         return false
     end

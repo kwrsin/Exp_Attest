@@ -12,8 +12,8 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     def teardown
     end
 
-    # def test_requestReceipt
-    #     ReceiptObjectAnalyzer.requestReceipt(lastReceipt, "test0001", :development)
+    # def test_exchangeReceipt
+    #     ReceiptObjectAnalyzer.exchangeReceipt(lastReceipt, "test0001", :development)
     # end
 
     # def test_verify!
@@ -25,7 +25,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     #     })
     #     receipt = lastReceipt.prop(:receipt)
     #     challenge = lastReceipt.prop(:challenge)
-    #     cert = lastReceipt.prop(:intermidiate_cartification)
+    #     cert = lastReceipt.prop(:intermidiate_certification)
     #     receiptObject = ReceiptObjectAnalyzer.new(receipt, challenge, cert, appId)
     #     receiptObject.verify!
     # end
@@ -44,7 +44,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     #     end   
     # end
 
-    def test_requestReceipt
+    def test_exchangeReceipt
         keyName = "test_Attested"
         lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
             challenge: keyName,
@@ -53,7 +53,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
         receipt = lastReceipt.prop(:receipt)
         challenge = lastReceipt.prop(:challenge)
         
-        ReceiptObjectAnalyzer.requestReceipt(receipt, challenge, :development)
+        ReceiptObjectAnalyzer.exchangeReceipt(receipt, challenge, :development)
     end
 
 
@@ -71,7 +71,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     #         path: Constants::STORE_PATH,
     #     })
     #     challenge = lastReceipt.prop(:challenge)
-    #     cert = lastReceipt.prop(:intermidiate_cartification)
+    #     cert = lastReceipt.prop(:intermidiate_certification)
     #     receiptObject = ReceiptObjectAnalyzer.new(receipt, challenge, cert, appId)
     #     assert_raise do
     #         receiptObject.verify!
