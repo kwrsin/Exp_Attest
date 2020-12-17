@@ -11,6 +11,7 @@ require './challengeFactory'
 require './attestationObjectAnalyzer'
 require './assertionObjectAnalyzer'
 require './receiptObjectAnalyzer'
+require './metricObjectAnalyzer'
 require './requestProcessor'
 
 set :bind, '0.0.0.0'
@@ -70,7 +71,8 @@ post '/assertion' do
     result = Constants::RESPONSE_FAULT
     begin
         analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], ENV['ATTEST_APPID'])
-        result = RequestProcessor::Processor.instance().process(analyzer.validatedRequest)
+        metric = MetricObjectAnalyzer.metricFromLastReceipt analyzer.challenge
+        result = RequestProcessor::Processor.instance().process(analyzer.validatedRequest, metric)
     rescue => error
         logger.error error.message
     end

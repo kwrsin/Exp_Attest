@@ -7,6 +7,7 @@ Rake::TestTask.new do |test|
     test.test_files = Dir[
         # './tests/unitStrageManagerTest.rb',
         './tests/unitReceiptTest.rb',
+        # './tests/unitPlaygroundTest.rb',
     ]
     test.verbose = true
 end

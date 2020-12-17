@@ -65,12 +65,9 @@ module StrageManager
                 @records.merge(diff) if diff
             end
 
-            def prop(key)
-                @records[key]
-            end
-
-            def getMode!
-                raise "getMode! is Not Implemented!!"
+            def prop(key = nil)
+                return @records[key] if key
+                @records
             end
 
         end
@@ -108,10 +105,6 @@ module StrageManager
 
             def remove!
                 deleteFiles(@path) if Dir.glob(@path).count > 0
-            end
-
-            def getMode!
-                raise "getMode! is Not Implemented!!"
             end
 
             def lastRecord!

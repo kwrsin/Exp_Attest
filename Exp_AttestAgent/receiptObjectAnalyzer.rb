@@ -25,7 +25,6 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         @intermidiate_certification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[1])
         @leaf_certification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[2])
         @attestedPK = OpenSSL::X509::Certificate.new(cert).public_key
-
     end
 
     FIELD_APPID = 2
@@ -183,4 +182,5 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             records: receipt
         }).append!
     end
+
 end

@@ -110,4 +110,8 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         end
         raise 'deleting fault!!'
     end
+
+    def challenge
+        @parsedClientData["challenge"]
+    end
 end
