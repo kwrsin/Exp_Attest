@@ -59,7 +59,7 @@ post '/attestation/:uuid' do
         appId = ENV['ATTEST_APPID']
         analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
         attestedObject = analyzer.saveAttestedObject!
-        result = Constants::RESPONSE_SUCCESS if requestMetric!(attestedObject, appId) > 0
+        result = Constants::RESPONSE_SUCCESS if requestMetric!(attestedObject, appId) > Constants::NO_METRIC
     rescue => error
         logger.error error.message
     end
@@ -107,7 +107,6 @@ def requestMetric!(attestedObject, appId)
         metricReceipt, challenge, cert, appId)
         
     metric = metricReceiptAnalyzer.verify!
-    raise 'invalid metric receipt' unless metric > 0
     metric
 end
 
