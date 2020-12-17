@@ -11,10 +11,10 @@ class MetricObjectAnalyzer < ReceiptObjectAnalyzer
     end
 
     def isExpired?
-        notBeforeTime = Time.parse(field(FIELD_NOT_BEFORE))
-        expirationTime = Time.parse(field(FIELD_EXPIRERATION_TIME))
         currentTime = Time.now
-        return true unless currentTime < notBeforeTime
+        # notBeforeTime = Time.parse(field(FIELD_NOT_BEFORE))
+        # return true unless currentTime < notBeforeTime
+        expirationTime = Time.parse(field(FIELD_EXPIRERATION_TIME))
         currentTime > expirationTime
     end
 
