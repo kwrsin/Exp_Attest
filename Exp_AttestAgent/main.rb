@@ -11,6 +11,7 @@ require './challengeFactory'
 require './attestationObjectAnalyzer'
 require './assertionObjectAnalyzer'
 require './receiptObjectAnalyzer'
+require './metricObjectAnalyzer'
 require './requestProcessor'
 
 set :bind, '0.0.0.0'
@@ -58,7 +59,7 @@ post '/attestation/:uuid' do
         appId = ENV['ATTEST_APPID']
         analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
         attestedObject = analyzer.saveAttestedObject!
-        result = Constants::RESPONSE_SUCCESS if requestMetric!(attestedObject, appId) > 0
+        result = Constants::RESPONSE_SUCCESS if requestMetric!(attestedObject, appId) > Constants::NO_METRIC
     rescue => error
         logger.error error.message
     end
@@ -70,7 +71,8 @@ post '/assertion' do
     result = Constants::RESPONSE_FAULT
     begin
         analyzer = AssertionObjectAnalyzer.new(params[:clientData], params[:assertion], ENV['ATTEST_APPID'])
-        result = RequestProcessor::Processor.instance().process(analyzer.validatedRequest)
+        metric = MetricObjectAnalyzer.metricFromLastReceipt analyzer.challenge
+        result = RequestProcessor::Processor.instance().process(analyzer.validatedRequest, metric)
     rescue => error
         logger.error error.message
     end
@@ -105,7 +107,6 @@ def requestMetric!(attestedObject, appId)
         metricReceipt, challenge, cert, appId)
         
     metric = metricReceiptAnalyzer.verify!
-    raise 'invalid metric receipt' unless metric > 0
     metric
 end
 

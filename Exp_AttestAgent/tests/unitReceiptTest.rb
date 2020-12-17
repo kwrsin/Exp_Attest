@@ -1,6 +1,7 @@
 require 'test/unit'
 require './strageManager'
 require './receiptObjectAnalyzer'
+require './metricObjectAnalyzer'
 require 'jwt'
 
 class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
@@ -32,7 +33,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
 
     # def test_jwt
     #     # jwt = "eyJraWQiOiJaQVgzQThHRDJSIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiIyNk5YRTQ3SE4yIiwiaWF0IjoxNjA3NzY0NTE3fQ.QD_Hk2_0RM_dKmVayC8u5Py6uH8OJIgstd-r0DWu5LvL4R3rU1-l_H39wBfsKd97ICa-63WwALsohjUukee3hA"
-    #     jwt = ReceiptObjectAnalyzer.getJWT
+    #     # jwt = ReceiptObjectAnalyzer.getJWT
     #     begin
     #         key = OpenSSL::PKey::EC.new(
     #         File.read(
@@ -44,17 +45,18 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     #     end   
     # end
 
-    def test_exchangeReceipt
-        keyName = "test_Attested"
-        lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-            challenge: keyName,
-            path: Constants::STORE_PATH,
-        })
-        receipt = lastReceipt.prop(:receipt)
-        challenge = lastReceipt.prop(:challenge)
+    # def test_exchangeReceipt
+    #     keyName = "test_Attested"
+    #     lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+    #         challenge: keyName,
+    #         path: Constants::STORE_PATH,
+    #     })
+    #     receipt = lastReceipt.prop(:receipt)
+    #     challenge = lastReceipt.prop(:challenge)
         
-        ReceiptObjectAnalyzer.exchangeReceipt(receipt, challenge, :development)
-    end
+    #     rc = ReceiptObjectAnalyzer.exchangeReceipt(receipt, challenge, :development)
+    #     # File.write(File.join(Constants::STORE_PATH, 'receipt.bin2'), rc) if rc
+    # end
 
 
     # def test_analyze_returned_receipt
@@ -76,6 +78,17 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     #     assert_raise do
     #         receiptObject.verify!
     #     end
-
     # end
+
+    def test_isExpired?
+        # keyName = "test_Receipt_*"
+        # lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+        #     challenge: keyName,
+        #     path: Constants::STORE_PATH,
+        # }).prop
+        # receiptObject = ReceiptObjectAnalyzer.new(lastReceipt)
+        # assert_equal receiptObject.isExpired?, false
+        # p receiptObject.getMetric
+        p MetricObjectAnalyzer.metricFromLastReceipt "e0f10e0a1fcd4206b6685789a570c92c"
+    end
 end

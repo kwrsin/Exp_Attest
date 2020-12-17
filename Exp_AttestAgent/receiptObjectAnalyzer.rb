@@ -25,7 +25,6 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         @intermidiate_certification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[1])
         @leaf_certification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[2])
         @attestedPK = OpenSSL::X509::Certificate.new(cert).public_key
-
     end
 
     FIELD_APPID = 2
@@ -153,13 +152,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             URI(Constants::APPLE_URL_DEVLOPMENT)
         keyName = "#{challenge}_Receipt_*"
 
-        unless lastReceipt
-            lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-                challenge: keyName,
-                path: Constants::STORE_PATH,
-            })
-            raise "could not get a last receipt." unless lastReceipt
-        end
+        raise "could not get a last receipt." unless lastReceipt
 
         # !!Must Use Strict encoding
         base64Receipt = Base64.strict_encode64(lastReceipt)
@@ -189,4 +182,5 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             records: receipt
         }).append!
     end
+
 end
