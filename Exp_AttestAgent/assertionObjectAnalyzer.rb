@@ -27,11 +27,13 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
             auth_data.byteslice(33...37),
             # auth_data.byteslice(33...-1)
         ]
-        @keyName = "#{@parsedClientData["challenge"]}_Attested"
-        @records = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+        @keyName = "#{@parsedClientData["challenge"]}_Attested_*"
+        strageManager = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
             challenge: @keyName,
             path: Constants::STORE_PATH
-        }).load!
+        })
+        @actualKeyname = strageManager.actualKeyname
+        @records =  strageManager.load!
         @keyId = @records[:keyId]
         @intermidiate_certification =
             OpenSSL::X509::Certificate.new(@records[:intermidiate_certification])
@@ -89,7 +91,7 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         if counter > 0
             @records[:counter] = counter
             StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-                challenge: @keyName,
+                challenge: @actualKeyname,
                 path: Constants::STORE_PATH,
             }).update!({
                 counter: counter,

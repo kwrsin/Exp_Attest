@@ -95,10 +95,10 @@ class AttestationObjectAnalyzer
             challenge_create_at: @cb['create_at'],
         }
         result = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-            challenge: "#{@challenge}_Attested",
+            challenge: "#{@challenge}_Attested_*",
             path: Constants::STORE_PATH,
             records: records
-        }).save!
+        }).append!
         return result
         raise 'persistent fault!!'
     end

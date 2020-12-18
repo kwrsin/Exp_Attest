@@ -21,6 +21,7 @@ module StrageManager
         class BaseStrage
             @records = nil
             @strageName = :Base
+            @actualKeyname = nil
             def initialize(options)
                 if options
                     @options = options
@@ -70,6 +71,9 @@ module StrageManager
                 @records
             end
 
+            def actualKeyname
+                @actualKeyname
+            end
         end
 
         class FileStrage < BaseStrage
@@ -111,6 +115,7 @@ module StrageManager
                 files = Dir.glob(@path)
                 filename = files.sort.last || ""
                 raise "could not find a last file." if filename.empty?
+                @actualKeyname = filename
                 filename
             end
 
