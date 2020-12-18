@@ -2,25 +2,26 @@ require 'singleton'
 require './constants'
 require './tools'
 
-module StrageManager
-    class Strage
+module StorageManager
+    class Storage
         include Singleton
 
-        def getStrage(strageType = Constants::STRAGE_TYPE, options = nil)
-            case strageType
+        def getStorage(storageType = Constants::STORAGE_TYPE, options = nil)
+            case storageType
             when :db
-                return StrageHelpers::DBStrage.new(options)
+                return StorageHelpers::DBStorage.new(options)
             else
-                return StrageHelpers::FileStrage.new(options)
+                return StorageHelpers::FileStorage.new(options)
             end
         end
     end
     
     private
-    module StrageHelpers
-        class BaseStrage
+    module StorageHelpers
+        class BaseStorage
             @records = nil
-            @strageName = :Base
+            @storageName = :Base
+            @actualKeyname = nil
             def initialize(options)
                 if options
                     @options = options
@@ -70,10 +71,13 @@ module StrageManager
                 @records
             end
 
+            def actualKeyname
+                @actualKeyname
+            end
         end
 
-        class FileStrage < BaseStrage
-            @strageName = :FILE
+        class FileStorage < BaseStorage
+            @storageName = :FILE
 
             def load!
                 filename = lastRecord!
@@ -111,13 +115,14 @@ module StrageManager
                 files = Dir.glob(@path)
                 filename = files.sort.last || ""
                 raise "could not find a last file." if filename.empty?
+                @actualKeyname = filename
                 filename
             end
 
         end
 
-        class DBStrage < BaseStrage
-            @strageName = :DB
+        class DBStorage < BaseStorage
+            @storageName = :DB
         end
     end
 end

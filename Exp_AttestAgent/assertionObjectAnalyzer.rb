@@ -3,7 +3,7 @@ require 'bundler/setup'
 
 require './constants'
 require './attestationObjectAnalyzer'
-require './strageManager'
+require './storageManager'
 require 'json'
 require 'base64'
 require 'cbor'
@@ -27,11 +27,13 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
             auth_data.byteslice(33...37),
             # auth_data.byteslice(33...-1)
         ]
-        @keyName = "#{@parsedClientData["challenge"]}_Attested"
-        @records = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+        @keyName = "#{@parsedClientData["challenge"]}_Attested_*"
+        storageManager = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
             challenge: @keyName,
             path: Constants::STORE_PATH
-        }).load!
+        })
+        @actualKeyname = storageManager.actualKeyname
+        @records =  storageManager.load!
         @keyId = @records[:keyId]
         @intermidiate_certification =
             OpenSSL::X509::Certificate.new(@records[:intermidiate_certification])
@@ -88,8 +90,8 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
         counter = verify!
         if counter > 0
             @records[:counter] = counter
-            StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
-                challenge: @keyName,
+            StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
+                challenge: @actualKeyname,
                 path: Constants::STORE_PATH,
             }).update!({
                 counter: counter,
@@ -101,7 +103,7 @@ class AssertionObjectAnalyzer < AttestationObjectAnalyzer
 
     def delete!
         if updateCounter!
-            StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+            StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
                 challenge: "#{@parsedClientData["challenge"]}_*",
                 path: Constants::STORE_PATH,
                 records: {},

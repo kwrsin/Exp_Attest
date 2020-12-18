@@ -1,5 +1,5 @@
 require 'test/unit'
-require './strageManager'
+require './storageManager'
 require './receiptObjectAnalyzer'
 require './metricObjectAnalyzer'
 require 'jwt'
@@ -20,7 +20,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     # def test_verify!
     #     appId = ENV['ATTEST_APPID']
     #     keyName = "test_Attested"
-    #     lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+    #     lastReceipt = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
     #         challenge: keyName,
     #         path: Constants::STORE_PATH,
     #     })
@@ -47,7 +47,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
 
     # def test_exchangeReceipt
     #     keyName = "test_Attested"
-    #     lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+    #     lastReceipt = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
     #         challenge: keyName,
     #         path: Constants::STORE_PATH,
     #     })
@@ -68,7 +68,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
 
     #     appId = ENV['ATTEST_APPID']
     #     keyName = "test_Attested"
-    #     lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+    #     lastReceipt = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
     #         challenge: keyName,
     #         path: Constants::STORE_PATH,
     #     })
@@ -82,7 +82,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
 
     def test_isExpired?
         # keyName = "test_Receipt_*"
-        # lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+        # lastReceipt = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
         #     challenge: keyName,
         #     path: Constants::STORE_PATH,
         # }).prop

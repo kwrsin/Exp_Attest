@@ -2,7 +2,7 @@ require 'test/unit'
 require './constants'
 require './challengeFactory'
 require './attestationObjectAnalyzer'
-require './strageManager'
+require './storageManager'
 
 =begin
 $ cd Exp_AttestAgent
@@ -49,8 +49,8 @@ class TC_Attest < Test::Unit::TestCase
             path: @path,
             records: records
         }
-        strage = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, options)
-        strage.save!
+        storage = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, options)
+        storage.save!
 
     end
 end

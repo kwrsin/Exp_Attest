@@ -1,10 +1,10 @@
 require 'test/unit'
 
 require './challengeFactory'
-require './strageManager'
+require './storageManager'
 require './constants'
 
-class TC_StrageManager < Test::Unit::TestCase
+class TC_StorageManager < Test::Unit::TestCase
     def setup
         @path = Constants::STORE_PATH
         @cf = ChallengeFactory.instance
@@ -13,7 +13,7 @@ class TC_StrageManager < Test::Unit::TestCase
     def teardown
     end
 
-    def test_mergeFileStrage
+    def test_mergeFileStorage
         ch = @cf.challenge
         uuid = ch[:uuid]
         ca = ch[:create_at]
@@ -25,8 +25,8 @@ class TC_StrageManager < Test::Unit::TestCase
                 create_at: ca
             }
         }
-        strage = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, options)
-        result = strage.save!({
+        storage = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, options)
+        result = storage.save!({
             counter: 99,
             pr_id: 2222,
             message: "hello world",
@@ -36,18 +36,18 @@ class TC_StrageManager < Test::Unit::TestCase
             challenge: uuid,
             path: @path,
         }
-        strageNew = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, options)
-        assert_equal(strageNew.prop(:uuid), uuid)
-        assert_equal(strageNew.prop(:create_at), ca)
-        assert_equal(strageNew.prop(:counter), 99)
-        assert_equal(strageNew.prop(:pr_id), 2222)
-        assert_equal(strageNew.prop(:message), "hello world")
+        storageNew = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, options)
+        assert_equal(storageNew.prop(:uuid), uuid)
+        assert_equal(storageNew.prop(:create_at), ca)
+        assert_equal(storageNew.prop(:counter), 99)
+        assert_equal(storageNew.prop(:pr_id), 2222)
+        assert_equal(storageNew.prop(:message), "hello world")
         
         options = {
             challenge: "#{uuid}_*",
             path: @path,
         }
-        StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, options).append!({
+        StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, options).append!({
             counter: 02,
             pr_id: 8080,
             message: "good bye",
@@ -56,7 +56,7 @@ class TC_StrageManager < Test::Unit::TestCase
         count = Dir.glob(File.join(@path, "#{uuid}*")).count
         assert_equal(3, count)
                 
-        StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+        StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
             challenge: "#{uuid}*",
             path: Constants::STORE_PATH,
             records: {}
@@ -67,7 +67,7 @@ class TC_StrageManager < Test::Unit::TestCase
         File.write(File.join(Constants::STORE_PATH, '94308_Test'), 'test')
 
         assert_nothing_raised do
-            StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+            StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
                 challenge: "94308*",
                 path: Constants::STORE_PATH,
                 records: {}

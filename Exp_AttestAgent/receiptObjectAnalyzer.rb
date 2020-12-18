@@ -6,7 +6,7 @@ require 'time'
 require 'json'
 
 require './constants'
-require './strageManager'
+require './storageManager'
 require './attestationObjectAnalyzer'
 
 class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
@@ -176,7 +176,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     end
 
     def self.append!(keyName, receipt)
-        StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+        StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
             challenge: keyName,
             path: Constants::STORE_PATH,
             records: receipt
