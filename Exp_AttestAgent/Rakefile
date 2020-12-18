@@ -5,7 +5,7 @@ task default: [:guard]
 Rake::TestTask.new do |test|
     `./runtest.sh`
     test.test_files = Dir[
-        # './tests/unitStrageManagerTest.rb',
+        # './tests/unitStorageManagerTest.rb',
         './tests/unitReceiptTest.rb',
         # './tests/unitPlaygroundTest.rb',
     ]

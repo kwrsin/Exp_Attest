@@ -2,7 +2,7 @@ require 'rubygems'
 require 'bundler/setup'
 
 require './constants'
-require './strageManager'
+require './storageManager'
 require 'base64'
 require 'cbor'
 require 'openssl'
@@ -94,7 +94,7 @@ class AttestationObjectAnalyzer
             mode: mode,
             challenge_create_at: @cb['create_at'],
         }
-        result = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+        result = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
             challenge: "#{@challenge}_Attested_*",
             path: Constants::STORE_PATH,
             records: records

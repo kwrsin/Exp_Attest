@@ -20,7 +20,7 @@ class MetricObjectAnalyzer < ReceiptObjectAnalyzer
 
     def self.metricFromLastReceipt(challenge)
         keyName = "#{challenge}_Receipt_*"
-        lastReceipt = StrageManager::Strage.instance().getStrage(Constants::STRAGE_TYPE, {
+        lastReceipt = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
             challenge: keyName,
             path: Constants::STORE_PATH,
         }).prop
