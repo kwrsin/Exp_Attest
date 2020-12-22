@@ -55,7 +55,6 @@ post '/attestation/:uuid' do
     result = Constants::RESPONSE_FAULT 
     begin
         uuid = params[:uuid]
-        settings.cf.set(uuid, params)
         appId = ENV['ATTEST_APPID']
         analyzer = AttestationObjectAnalyzer.new(params[:keyId], params[:attestation], uuid, appId)
         attestedObject = analyzer.saveAttestedObject!
