@@ -91,6 +91,18 @@ delete '/checked' do
     json :result => result
 end
 
+get '/can_update_atestation/:uuid' do
+    result = Constants::RESPONSE_FAULT
+    begin        
+        result = 
+            AttestationObjectAnalyzer.canUpdateAttestation? params[:uuid]
+    rescue => error
+        logger.error error.message
+    end
+
+    json :result => result    
+end
+
 def requestMetric!(attestedObject, appId)
     receipt = attestedObject[:receipt]
     challenge = attestedObject[:challenge]
