@@ -1,6 +1,7 @@
 module Constants
     STORE_PATH = '../store'
     RESPONSE_FAULT = -1
+    RESPONSE_NONE = 0
     RESPONSE_SUCCESS = 1
 
     ATTEST_APPLE_ROOT_CA_PATH = '../store/AppleRootCA-G3.cer'

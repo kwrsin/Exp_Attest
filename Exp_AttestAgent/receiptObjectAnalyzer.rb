@@ -10,10 +10,10 @@ require './storageManager'
 require './attestationObjectAnalyzer'
 
 class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
-    def initialize(receipt, challenge, cert, appId)
+    def initialize(receipt, challenge, cert = nil, appId = nil)
         @receipt = receipt
         @challenge = challenge
-        @appId = appId
+        @appId = appId if appId
         @pkcs7 = OpenSSL::PKCS7.new(@receipt)
         octetstring = OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[2].value[1].value[0].value
         @fields = OpenSSL::ASN1.decode(octetstring).value
@@ -24,7 +24,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             OpenSSL::X509::Certificate.new(ca_pem)
         @intermidiate_certification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[1])
         @leaf_certification = OpenSSL::X509::Certificate.new(OpenSSL::ASN1.decode(@pkcs7.to_der).value.last.value.first.value[3].value[2])
-        @attestedPK = OpenSSL::X509::Certificate.new(cert).public_key
+        @attestedPK = OpenSSL::X509::Certificate.new(cert).public_key if cert
     end
 
     FIELD_APPID = 2
@@ -92,6 +92,16 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         store = OpenSSL::X509::Store.new
         store.add_cert @ca_certification
         @pkcs7.verify(nil, store)
+    end
+
+    def canUpdateAttestation?
+        expirerationTime = Time.parse(field(FIELD_EXPIRERATION_TIME))
+        currentTime = Time.now
+        return true if currentTime > expirerationTime
+        fieldNotBefore = field(FIELD_NOT_BEFORE)
+        return true if fieldNotBefore.to_s.empty?
+        notBefore = Time.parse(fieldNotBefore)
+        currentTime > notBefore
     end
 
     module ReceiptStatus
@@ -181,6 +191,23 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             path: Constants::STORE_PATH,
             records: receipt
         }).append!
+    end
+
+    def self.canUpdateAttestation?(challenge)
+        canUpdate = Constants::RESPONSE_NONE
+        begin
+            storageManager = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
+                challenge: "#{challenge}_Attested_*",
+                path: Constants::STORE_PATH
+            })
+            records =  storageManager.load!
+            receipt = records[:receipt]
+            receiptAnalyzer = ReceiptObjectAnalyzer.new(receipt, challenge)
+            canUpdate = Constants::RESPONSE_SUCCESS if receiptAnalyzer.canUpdateAttestation?
+        rescue
+            canUpdate = Constants::RESPONSE_SUCCESS
+        end
+        canUpdate
     end
 
 end

@@ -80,7 +80,7 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
     #     end
     # end
 
-    def test_isExpired?
+    # def test_isExpired?
         # keyName = "test_Receipt_*"
         # lastReceipt = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
         #     challenge: keyName,
@@ -89,6 +89,14 @@ class TC_ReceiptObjectAnalyzer < Test::Unit::TestCase
         # receiptObject = ReceiptObjectAnalyzer.new(lastReceipt)
         # assert_equal receiptObject.isExpired?, false
         # p receiptObject.getMetric
-        p MetricObjectAnalyzer.metricFromLastReceipt "e0f10e0a1fcd4206b6685789a570c92c"
+    #     p MetricObjectAnalyzer.metricFromLastReceipt "e0f10e0a1fcd4206b6685789a570c92c"
+    # end
+
+    def test_canUpdateAttestation?
+        answer =  ReceiptObjectAnalyzer.canUpdateAttestation? "dummy"
+        assert_equal Constants::RESPONSE_SUCCESS, answer
+
+        answer =  ReceiptObjectAnalyzer.canUpdateAttestation? "canupdattest"
+        assert_equal Constants::RESPONSE_SUCCESS, answer
     end
 end
