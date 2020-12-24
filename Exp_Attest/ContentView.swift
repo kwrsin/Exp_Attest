@@ -15,6 +15,7 @@ struct ContentView: View {
     @State var attestResponse: Int = 0
     @State var premiumContents: String = "----"
     @State var removed = ""
+    @State var attestationState: String = "----"
     static let domain = "http://192.168.11.2:4567"
     var body: some View {
         Text(challenge)
@@ -35,6 +36,40 @@ struct ContentView: View {
         Button(action: {
             delete()
         }, label: {Text("Remove")})
+        Text("can update attest \(attestationState)")
+        Button(action: {
+            canUpdateAttestation()
+        }, label: {Text("Comfirm")})
+    }
+    
+    func canUpdateAttestation() {
+        guard let uuid = UserDefaults.standard.string(forKey: "uuid") else {
+            return
+        }
+        let service = DCAppAttestService.shared
+        if service.isSupported {
+            let req_challenge = URLRequest(url: URL(string: "\(Self.domain)/can_update_atestation/\(uuid)")!)
+            DispatchQueue.global(qos: .userInitiated).async {
+                URLSession.shared.dataTask(with: req_challenge) {data, res, error in
+                    guard let data = data, let res = res else {
+                        return
+                    }
+                    let httpres = res as! HTTPURLResponse
+                    print(httpres.statusCode)
+                    
+                    var result = [String:Any]()
+                    do {
+                        result = try JSONSerialization.jsonObject(with: data, options: []) as! [String : Any]
+                        let state = result["result"] as! Int
+                        DispatchQueue.main.async {
+                            attestationState = "\(state)"
+                        }
+                    } catch let err {
+                        print(err)
+                    }
+                }.resume()
+            }
+        }
     }
     
     func delete() {
