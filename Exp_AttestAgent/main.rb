@@ -91,11 +91,11 @@ delete '/checked' do
     json :result => result
 end
 
-get '/can_update_atestation/:uuid' do
+get '/time_limit_atestation/:uuid' do
     result = Constants::RESPONSE_FAULT
     begin        
         result = 
-            ReceiptObjectAnalyzer.canUpdateAttestation? params[:uuid]
+            ReceiptObjectAnalyzer.timelimitAttestation params[:uuid]
     rescue => error
         logger.error error.message
     end

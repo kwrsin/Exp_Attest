@@ -94,14 +94,16 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         @pkcs7.verify(nil, store)
     end
 
-    def canUpdateAttestation?
+    def timelimitAttestation
         expirerationTime = Time.parse(field(FIELD_EXPIRERATION_TIME))
         currentTime = Time.now
-        return true if currentTime > expirerationTime
+        timelimit = expirerationTime - currentTime
+        return Constants::RESPONSE_FAULT if timelimit <= 0
         fieldNotBefore = field(FIELD_NOT_BEFORE)
-        return true if fieldNotBefore.to_s.empty?
+        return timelimit if fieldNotBefore.to_s.empty?
         notBefore = Time.parse(fieldNotBefore)
-        currentTime > notBefore
+        return timelimit if currentTime > notBefore
+        Constants::RESPONSE_FAULT
     end
 
     module ReceiptStatus
@@ -193,8 +195,8 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         }).append!
     end
 
-    def self.canUpdateAttestation?(challenge)
-        canUpdate = Constants::RESPONSE_NONE
+    def self.timelimitAttestation(challenge)
+        limilimit = Constants::RESPONSE_FAULT
         begin
             storageManager = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
                 challenge: "#{challenge}_Attested_*",
@@ -203,11 +205,11 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
             records =  storageManager.load!
             receipt = records[:receipt]
             receiptAnalyzer = ReceiptObjectAnalyzer.new(receipt, challenge)
-            canUpdate = Constants::RESPONSE_SUCCESS if receiptAnalyzer.canUpdateAttestation?
+            limilimit = receiptAnalyzer.timelimitAttestation
         rescue
-            canUpdate = Constants::RESPONSE_SUCCESS
+            limilimit = Constants::RESPONSE_FAULT
         end
-        canUpdate
+        limilimit
     end
 
 end
