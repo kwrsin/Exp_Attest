@@ -17,9 +17,8 @@ class MetricObjectAnalyzer < ReceiptObjectAnalyzer
     end
 
     def self.metricFromLastReceipt(challenge)
-        keyName = "#{challenge}_Receipt_*"
         lastReceipt = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
-            challenge: keyName,
+            challenge: "#{challenge}_Receipt_*",
             path: Constants::STORE_PATH,
         }).prop
         receiptObject = MetricObjectAnalyzer.new(lastReceipt)
