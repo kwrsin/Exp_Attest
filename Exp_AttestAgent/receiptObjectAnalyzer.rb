@@ -199,11 +199,10 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         limilimit = Constants::RESPONSE_FAULT
         begin
             storageManager = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
-                challenge: "#{challenge}_Attested_*",
+                challenge: "#{challenge}_Receipt_*",
                 path: Constants::STORE_PATH
             })
-            records =  storageManager.load!
-            receipt = records[:receipt]
+            receipt =  storageManager.load!
             receiptAnalyzer = ReceiptObjectAnalyzer.new(receipt, challenge)
             limilimit = receiptAnalyzer.timelimitAttestation
         rescue
