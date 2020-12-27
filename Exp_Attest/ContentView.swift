@@ -36,19 +36,19 @@ struct ContentView: View {
         Button(action: {
             delete()
         }, label: {Text("Remove")})
-        Text("can update attest \(attestationState)")
+        Text("timilimit to attest \(attestationState)")
         Button(action: {
-            canUpdateAttestation()
+            timelimitAttestation()
         }, label: {Text("Comfirm")})
     }
     
-    func canUpdateAttestation() {
+    func timelimitAttestation() {
         guard let uuid = UserDefaults.standard.string(forKey: "uuid") else {
             return
         }
         let service = DCAppAttestService.shared
         if service.isSupported {
-            let req_challenge = URLRequest(url: URL(string: "\(Self.domain)/can_update_atestation/\(uuid)")!)
+            let req_challenge = URLRequest(url: URL(string: "\(Self.domain)/time_limit_atestation/\(uuid)")!)
             DispatchQueue.global(qos: .userInitiated).async {
                 URLSession.shared.dataTask(with: req_challenge) {data, res, error in
                     guard let data = data, let res = res else {
@@ -60,7 +60,7 @@ struct ContentView: View {
                     var result = [String:Any]()
                     do {
                         result = try JSONSerialization.jsonObject(with: data, options: []) as! [String : Any]
-                        let state = result["result"] as! Int
+                        let state = result["result"] as! NSNumber
                         DispatchQueue.main.async {
                             attestationState = "\(state)"
                         }
