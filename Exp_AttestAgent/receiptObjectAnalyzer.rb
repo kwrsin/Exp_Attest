@@ -103,7 +103,7 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
         return timelimit if fieldNotBefore.to_s.empty?
         notBefore = Time.parse(fieldNotBefore)
         return timelimit if currentTime > notBefore
-        Constants::RESPONSE_FAULT
+        Constants::RESPONSE_NONE
     end
 
     module ReceiptStatus
