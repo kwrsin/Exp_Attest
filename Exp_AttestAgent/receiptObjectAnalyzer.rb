@@ -198,12 +198,11 @@ class ReceiptObjectAnalyzer < AttestationObjectAnalyzer
     def self.timelimitAttestation(challenge)
         limilimit = Constants::RESPONSE_FAULT
         begin
-            storageManager = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
+            lastReceipt = StorageManager::Storage.instance().getStorage(Constants::STORAGE_TYPE, {
                 challenge: "#{challenge}_Receipt_*",
                 path: Constants::STORE_PATH
-            })
-            receipt =  storageManager.load!
-            receiptAnalyzer = ReceiptObjectAnalyzer.new(receipt, challenge)
+            }).prop
+            receiptAnalyzer = ReceiptObjectAnalyzer.new(lastReceipt, challenge)
             limilimit = receiptAnalyzer.timelimitAttestation
         rescue
             limilimit = Constants::RESPONSE_FAULT
